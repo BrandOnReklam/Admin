@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BrandOn | Ajans Yönetim Paneli</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f4f7f6; 
+            margin: 0; 
+            color: #333; 
+            -webkit-tap-highlight-color: transparent; /* Mobildeki mavi seçilme efektini kaldırır */
+        }
+        
+        /* Yan Panel */
+        .sidebar { 
+            width: 260px; 
+            height: 100vh; 
+            background: #1a1c23; 
+            position: fixed; 
+            color: #fff; 
+            padding: 20px; 
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            left: 0;
+        }
+        
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        .sidebar h2 { 
+            font-size: 20px; 
+            font-weight: 600;
+            letter-spacing: 2px; 
+            margin-bottom: 30px; 
+            border-bottom: 1px solid #333; 
+            padding-bottom: 15px;
+            color: #3b82f6;
+            text-align: center;
+        }
+
+        .content { margin-left: 300px; padding: 40px; transition: opacity 0.3s; }
+        
+        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+        .header h1 { margin: 0; font-size: 28px; }
+        .header .date-range { font-weight: 600; color: #3b82f6; background: #e0e7ff; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
+
+        /* Metrik Izgarası */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        
+        .card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; border: 1px solid #eee; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .card h3 { margin: 0; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+        .card .value { font-size: 24px; font-weight: 600; margin: 10px 0; color: #1a1c23; }
+        .card .unit { font-size: 14px; color: #666; font-weight: 400; margin-left: 4px; }
+
+        /* AI Yorumu Alanı */
+        .ai-section { margin-top: 30px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .ai-section h3 { margin-top: 0; color: #3b82f6; font-size: 14px; text-transform: uppercase; }
+        .ai-section p { font-style: italic; line-height: 1.6; color: #cbd5e1; }
+
+        .brand-list { list-style: none; padding: 0; margin: 0 0 50px 0; }
+        .brand-list li { 
+            padding: 12px 15px; 
+            cursor: pointer; 
+            border-radius: 8px; 
+            transition: background 0.2s; 
+            font-size: 13px; 
+            color: #a0aec0;
+            margin-bottom: 4px;
+            user-select: none;
+        }
+        .brand-list li:hover { background: #2d2f39; color: #fff; }
+        .active { background: #3b82f6 !important; color: #fff !important; font-weight: 600 !important; }
+
+        /* --- MOBİL ÖZEL --- */
+        #menu-toggle { display: none; }
+        #sidebar-overlay { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 999; 
+            backdrop-filter: blur(2px);
+        }
+
+        @media (max-width: 992px) {
+            #menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1100;
+                background: #3b82f6;
+                color: white;
+                border: none;
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                font-size: 20px;
+                cursor: pointer;
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 280px;
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            #sidebar-overlay.active {
+                display: block;
+            }
+
+            .content {
+                margin-left: 0;
+                padding: 20px;
+                padding-top: 85px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<button id="menu-toggle">☰</button>
+<div id="sidebar-overlay"></div>
+
+<div class="sidebar">
+    <h2>BRAND ON</h2>
+    <ul class="brand-list" id="brand-items">
+        <li class="active">NAZİLLİ DAĞI</li>
+        <li>RISLONE</li>
+        <li>BEYS</li>
+        <li>KUP10</li>
+        <li>DEDE COSMETİCS</li>
+        <li>BAHCEMDEN YÖRESEL</li>
+        <li>MONTESSİ</li>
+        <li>SOFT</li>
+        <li>2BROTHERS</li>
+        <li>DOGALYASAMDAN</li>
+        <li>EVERHOLD</li>
+        <li>FREYA</li>
+        <li>MANGA MODA</li>
+        <li>PASTABELLİS</li>
+        <li>WAYB</li>
+        <li>LİMPOTECH</li>
+        <li>TARLADAN MUTFAĞA</li>
+        <li>KÖYÜMDEN GELEN SAĞLIK</li>
+        <li>EL YAPIMI YÖRESEL</li>
+        <li>MONRE</li>
+    </ul>
+</div>
+
+<div class="content" id="main-content">
+    <div class="header">
+        <div>
+            <h1><span id="current-brand">NAZİLLİ DAĞI</span></h1>
+            <small style="color: #888;">Rapor Tarihi: <span id="report-date">--/--/----</span></small>
+        </div>
+        <div class="date-range" id="date-range">Tarih Aralığı: Bekleniyor...</div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Toplam Ciro</h3>
+            <div class="value" id="total-revenue">0.00<span class="unit">TL</span></div>
+        </div>
+        <div class="card">
+            <h3>Reklam Harcaması</h3>
+            <div class="value" id="total-spend">0.00<span class="unit">TL</span></div>
+        </div>
+        <div class="card">
+            <h3>ROAS</h3>
+            <div class="value" id="roas">0.00</div>
+        </div>
+        <div class="card">
+            <h3>Ort. Sepet Tutarı</h3>
+            <div class="value" id="avg-order-value">0.00<span class="unit">TL</span></div>
+        </div>
+        <div class="card">
+            <h3>Sipariş Sayısı</h3>
+            <div class="value" id="order-count">0</div>
+        </div>
+        <div class="card">
+            <h3>Tıklamalar</h3>
+            <div class="value" id="clicks">0</div>
+        </div>
+        <div class="card">
+            <h3>Erişim</h3>
+            <div class="value" id="reach">0</div>
+        </div>
+        <div class="card">
+            <h3>Mesaj Sayısı</h3>
+            <div class="value" id="message-count">0</div>
+        </div>
+        <div class="card">
+            <h3>Günlük Ort. Harcama</h3>
+            <div class="value" id="daily-avg-spend">0.00<span class="unit">TL</span></div>
+        </div>
+    </div>
+
+    <div class="ai-section">
+        <h3>🤖 AI Strategist Yorumu</h3>
+        <p id="ai-comment">Veri bekleniyor...</p>
+    </div>
+</div>
+
+<script>
+    const supabaseUrl = 'https://npcuixdegetaiqylkknu.supabase.co'; 
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wY3VpeGRlZ2V0YWlxeWxra251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDkwNjcsImV4cCI6MjA5MDc4NTA2N30.5qfSuiy9d9kWRvT7Vu-cyL9SuJe4dMKAbfjBPFEIVNY'; 
+    const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    const brandItems = document.querySelectorAll('.brand-list li');
+    const brandTitle = document.getElementById('current-brand');
+    const contentArea = document.getElementById('main-content');
+    const sidebar = document.querySelector('.sidebar');
+    const menuToggle = document.getElementById('menu-toggle');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    // Menü Aç/Kapat
+    function toggleSidebar() {
+        sidebar.classList.toggle('show');
+        overlay.classList.toggle('active');
+    }
+
+    menuToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleSidebar();
+    });
+
+    overlay.addEventListener('click', toggleSidebar);
+
+    // Veri Çekme
+    async function fetchBrandData(brandName) {
+        contentArea.style.opacity = '0.4';
+        
+        const { data, error } = await _supabase
+            .from('marketing_reports')
+            .select('*')
+            .eq('brand_name', brandName)
+            .order('report_date', { ascending: false })
+            .limit(1)
+            .single();
+
+        contentArea.style.opacity = '1';
+
+        if (error) {
+            console.error('Hata:', error.message);
+            resetValues();
+            return;
+        }
+
+        if (data) {
+            const formatMoney = (num) => parseFloat(num || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+            const formatInt = (num) => parseInt(num || 0).toLocaleString('tr-TR');
+
+            document.getElementById('total-revenue').innerHTML = `${formatMoney(data.revenue)} <span class="unit">TL</span>`;
+            document.getElementById('total-spend').innerHTML = `${formatMoney(data.spend)} <span class="unit">TL</span>`;
+            document.getElementById('roas').innerText = parseFloat(data.roas || 0).toFixed(2);
+            document.getElementById('avg-order-value').innerHTML = `${formatMoney(data.aov)} <span class="unit">TL</span>`;
+            document.getElementById('order-count').innerText = formatInt(data.order_count);
+            document.getElementById('clicks').innerText = formatInt(data.clicks);
+            document.getElementById('reach').innerText = formatInt(data.reach);
+            document.getElementById('message-count').innerText = formatInt(data.messaging_count);
+            document.getElementById('daily-avg-spend').innerHTML = `${formatMoney(data.avg_daily_spend)} <span class="unit">TL</span>`;
+            document.getElementById('ai-comment').innerText = data.ai_summary || "Henüz bir analiz girilmemiş.";
+            document.getElementById('report-date').innerText = new Date(data.report_date).toLocaleDateString('tr-TR');
+            document.getElementById('date-range').innerText = `Rapor Aralığı: ${data.report_range || 'Bilinmiyor'}`;
+        }
+    }
+
+    function resetValues() {
+        document.querySelectorAll('.value').forEach(v => v.innerHTML = '--');
+        document.getElementById('ai-comment').innerText = "Veri bulunamadı.";
+    }
+
+    // Marka Seçimi (Mobil Uyumluluk Fixlendi)
+    brandItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Aktif sınıfını değiştir
+            document.querySelector('.brand-list li.active').classList.remove('active');
+            this.classList.add('active');
+            
+            // Başlığı güncelle ve veriyi çek
+            const selectedBrand = this.innerText;
+            brandTitle.innerText = selectedBrand;
+            fetchBrandData(selectedBrand);
+
+            // Eğer mobildeyse menüyü kapat
+            if (window.innerWidth <= 992) {
+                setTimeout(() => {
+                    toggleSidebar();
+                }, 150); // Hafif gecikme tıklama hissini iyileştirir
+            }
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchBrandData('NAZİLLİ DAĞI');
+    });
+</script>
+
+</body>
+</html>
