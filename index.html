@@ -199,7 +199,7 @@
 </div>
 
 <script>
-    const supabaseUrl = 'https://npcuixdegetaiqylkknu.supabase.co'; 
+  const supabaseUrl = 'https://npcuixdegetaiqylkknu.supabase.co'; 
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wY3VpeGRlZ2V0YWlxeWxra251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDkwNjcsImV4cCI6MjA5MDc4NTA2N30.5qfSuiy9d9kWRvT7Vu-cyL9SuJe4dMKAbfjBPFEIVNY'; 
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
@@ -211,7 +211,8 @@
     const menuToggle = document.getElementById('menu-toggle');
     const overlay = document.getElementById('sidebar-overlay');
 
-    // Ana Sayfaya Dön
+    let myChart = null; // HATAYI BURADA ÇÖZDÜK: Başlangıç değeri verdik.
+
     function showHome() {
         brandView.style.display = 'none';
         homeView.style.display = 'block';
@@ -219,7 +220,6 @@
         if (window.innerWidth <= 992) toggleSidebar();
     }
 
-    // MenüAç/Kapat
     function toggleSidebar() {
         sidebar.classList.toggle('show');
         overlay.classList.toggle('active');
@@ -228,9 +228,7 @@
     menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
     overlay.addEventListener('click', toggleSidebar);
 
-    // Veri Çekme
     async function fetchBrandData(brandName) {
-        // Görünümü değiştir
         homeView.style.display = 'none';
         brandView.style.display = 'block';
         brandView.style.opacity = '0.4';
@@ -267,8 +265,10 @@
             document.getElementById('ai-comment').innerText = data.ai_summary || "Henüz bir analiz girilmemiş.";
             document.getElementById('report-date').innerText = new Date(data.report_date).toLocaleDateString('tr-TR');
             document.getElementById('date-range').innerText = `Rapor Aralığı: ${data.report_range || 'Bilinmiyor'}`;
+            
+            // GRAFİK BURADA TETİKLENİYOR
+            updateChart(data.revenue, data.spend);
         }
-        updateChart(data.revenue, data.spend);
     }
 
     function resetValues() {
@@ -286,45 +286,48 @@
             brandTitle.innerText = selectedBrand;
             fetchBrandData(selectedBrand);
 
-
             if (window.innerWidth <= 992) {
                 setTimeout(() => { toggleSidebar(); }, 150);
             }
         });
     });
-    function updateChart(revenue, spend) {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    
-    if (myChart) { myChart.destroy(); }
 
-    myChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Reklam Harcaması', 'Net Ciro (Harcama Hariç)'],
-            datasets: [{
-                data: [spend, revenue - spend],
-                backgroundColor: ['#ef4444', '#10b981'], // Kırmızı ve Yeşil
-                hoverOffset: 4,
-                borderWidth: 0
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            return context.label + ': ' + context.raw.toLocaleString('tr-TR') + ' TL';
+    function updateChart(revenue, spend) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        
+        // Eğer daha önce çizilmiş bir grafik varsa onu yok et (üst üste binmesin)
+        if (myChart) { 
+            myChart.destroy(); 
+        }
+
+        myChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Reklam Harcaması', 'Net Ciro (Harcama Hariç)'],
+                datasets: [{
+                    data: [spend, (revenue - spend) > 0 ? (revenue - spend) : 0], // Ciro harcamadan azsa hata vermesin
+                    backgroundColor: ['#ef4444', '#10b981'],
+                    hoverOffset: 10,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ': ' + context.raw.toLocaleString('tr-TR') + ' TL';
+                            }
                         }
                     }
-                }
-            },
-            cutout: '70%' // Ortasını delik yapar, daha modern durur
-        }
-    });
-}
+                },
+                cutout: '70%'
+            }
+        });
+    }
 </script>
 </body>
 </html>
