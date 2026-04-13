@@ -98,6 +98,7 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -186,6 +187,10 @@
             <div class="card"><h3>Günlük Ort. Harcama</h3><div class="value" id="daily-avg-spend">0.00<span class="unit">TL</span></div></div>
         </div>
 
+        <div class="card" style="margin-top: 30px; height: 350px;">
+    <h3>Harcama / Ciro Dengesi (Son 7 Günlük Toplam)</h3>
+    <canvas id="performanceChart"></canvas>
+        </div>
         <div class="ai-section">
             <h3>🤖 AI Strategist Yorumu</h3>
             <p id="ai-comment">Veri bekleniyor...</p>
@@ -263,6 +268,7 @@
             document.getElementById('report-date').innerText = new Date(data.report_date).toLocaleDateString('tr-TR');
             document.getElementById('date-range').innerText = `Rapor Aralığı: ${data.report_range || 'Bilinmiyor'}`;
         }
+        updateChart(data.revenue, data.spend);
     }
 
     function resetValues() {
@@ -286,6 +292,39 @@
             }
         });
     });
+    function updateChart(revenue, spend) {
+    const ctx = document.getElementById('performanceChart').getContext('2d');
+    
+    if (myChart) { myChart.destroy(); }
+
+    myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Reklam Harcaması', 'Net Ciro (Harcama Hariç)'],
+            datasets: [{
+                data: [spend, revenue - spend],
+                backgroundColor: ['#ef4444', '#10b981'], // Kırmızı ve Yeşil
+                hoverOffset: 4,
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.label + ': ' + context.raw.toLocaleString('tr-TR') + ' TL';
+                        }
+                    }
+                }
+            },
+            cutout: '70%' // Ortasını delik yapar, daha modern durur
+        }
+    });
+}
 </script>
 </body>
 </html>
