@@ -228,48 +228,56 @@
     menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
     overlay.addEventListener('click', toggleSidebar);
 
-    async function fetchBrandData(brandName) {
-        homeView.style.display = 'none';
-        brandView.style.display = 'block';
-        brandView.style.opacity = '0.4';
-        
-        const { data, error } = await _supabase
-            .from('marketing_reports')
-            .select('*')
-            .eq('brand_name', brandName)
-            .order('report_date', { ascending: false })
-            .limit(1)
-            .single();
+async function fetchBrandData(brandName) {
+    homeView.style.display = 'none';
+    brandView.style.display = 'block';
+    
+    // Varsayılan: Son 30 gün (Sen bunu tarih seçiciyle de bağlayabilirsin ileride)
+    const { data, error } = await _supabase
+        .from('marketing_reports')
+        .select('*')
+        .eq('brand_name', brandName)
+        .order('report_date', { ascending: false });
 
-        brandView.style.opacity = '1';
-
-        if (error) {
-            console.error('Hata:', error.message);
-            resetValues();
-            return;
-        }
-
-        if (data) {
-            const formatMoney = (num) => parseFloat(num || 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-            const formatInt = (num) => parseInt(num || 0).toLocaleString('tr-TR');
-
-            document.getElementById('total-revenue').innerHTML = `${formatMoney(data.revenue)} <span class="unit">TL</span>`;
-            document.getElementById('total-spend').innerHTML = `${formatMoney(data.spend)} <span class="unit">TL</span>`;
-            document.getElementById('roas').innerText = parseFloat(data.roas || 0).toFixed(2);
-            document.getElementById('avg-order-value').innerHTML = `${formatMoney(data.aov)} <span class="unit">TL</span>`;
-            document.getElementById('order-count').innerText = formatInt(data.order_count);
-            document.getElementById('clicks').innerText = formatInt(data.clicks);
-            document.getElementById('reach').innerText = formatInt(data.reach);
-            document.getElementById('message-count').innerText = formatInt(data.messaging_count);
-            document.getElementById('daily-avg-spend').innerHTML = `${formatMoney(data.avg_daily_spend)} <span class="unit">TL</span>`;
-            document.getElementById('ai-comment').innerText = data.ai_summary || "Henüz bir analiz girilmemiş.";
-            document.getElementById('report-date').innerText = new Date(data.report_date).toLocaleDateString('tr-TR');
-            document.getElementById('date-range').innerText = `Rapor Aralığı: ${data.report_range || 'Bilinmiyor'}`;
-            
-            // GRAFİK BURADA TETİKLENİYOR
-            updateChart(data.revenue, data.spend);
-        }
+    if (error || !data.length) {
+        console.error('Hata:', error);
+        resetValues();
+        return;
     }
+
+    // VERİLERİ TOPLAMA (SUM) MANTIĞI
+    const totals = data.reduce((acc, curr) => {
+        acc.revenue += (curr.revenue || 0);
+        acc.spend += (curr.spend || 0);
+        acc.order_count += (curr.order_count || 0);
+        acc.clicks += (curr.clicks || 0);
+        acc.reach += (curr.reach || 0);
+        acc.messaging_count += (curr.messaging_count || 0);
+        return acc;
+    }, { revenue: 0, spend: 0, order_count: 0, clicks: 0, reach: 0, messaging_count: 0 });
+
+    // HESAPLAMALAR
+    const roas = totals.spend > 0 ? (totals.revenue / totals.spend).toFixed(2) : "0.00";
+    const aov = totals.order_count > 0 ? (totals.revenue / totals.order_count).toFixed(2) : "0.00";
+
+    // PANELE BASMA
+    const formatMoney = (num) => parseFloat(num).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+    
+    document.getElementById('total-revenue').innerHTML = `${formatMoney(totals.revenue)} <span class="unit">TL</span>`;
+    document.getElementById('total-spend').innerHTML = `${formatMoney(totals.spend)} <span class="unit">TL</span>`;
+    document.getElementById('roas').innerText = roas;
+    document.getElementById('avg-order-value').innerHTML = `${formatMoney(aov)} <span class="unit">TL</span>`;
+    document.getElementById('order-count').innerText = totals.order_count;
+    document.getElementById('clicks').innerText = totals.clicks;
+    document.getElementById('reach').innerText = totals.reach;
+    document.getElementById('message-count').innerText = totals.messaging_count;
+    
+    // AI Özeti ve Tarih (En son günün verisini alıyoruz)
+    document.getElementById('ai-comment').innerText = data[0].ai_summary || "Analiz bekleniyor...";
+    document.getElementById('report-date').innerText = new Date(data[0].report_date).toLocaleDateString('tr-TR');
+    
+    updateChart(totals.revenue, totals.spend);
+}
 
     function resetValues() {
         document.querySelectorAll('#brand-view .value').forEach(v => v.innerHTML = '--');
