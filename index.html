@@ -4,149 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>BrandOn | Ajans Yönetim Paneli</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f4f7f6; margin: 0; color: #333; -webkit-tap-highlight-color: transparent; }
-        .sidebar { width: 260px; height: 100vh; background: #1a1c23; position: fixed; color: #fff; padding: 20px; overflow-y: auto; z-index: 1000; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); left: 0; }
-        .sidebar::-webkit-scrollbar { width: 5px; }
-        .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        .sidebar h2 { font-size: 20px; font-weight: 600; letter-spacing: 2px; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; color: #3b82f6; text-align: center; cursor: pointer; }
-        .content { margin-left: 300px; padding: 40px; transition: opacity 0.3s; }
-        #brand-view { display: none; }
-        #home-view { display: block; }
-        .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; flex-wrap: wrap; gap: 20px; }
-        .header h1 { margin: 0; font-size: 28px; }
-        .header .date-range { font-weight: 600; color: #3b82f6; background: #e0e7ff; padding: 5px 15px; border-radius: 20px; font-size: 13px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
-        .card { background: #fff; padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.3s; border: 1px solid #eee; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-        .card h3 { margin: 0; font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-        .card .value { font-size: 24px; font-weight: 600; margin: 10px 0; color: #1a1c23; }
-        .card .unit { font-size: 14px; color: #666; font-weight: 400; margin-left: 4px; }
-        .welcome-card { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 40px; border-radius: 24px; margin-bottom: 30px; }
-        .welcome-card h2 { margin: 0; font-size: 32px; }
-        .welcome-card p { opacity: 0.9; margin-top: 10px; font-size: 18px; }
-        .ai-section { margin-top: 30px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); color: #fff; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .ai-section h3 { margin-top: 0; color: #3b82f6; font-size: 14px; text-transform: uppercase; }
-        .ai-section p { font-style: italic; line-height: 1.6; color: #cbd5e1; }
-        .brand-list { list-style: none; padding: 0; margin: 0 0 50px 0; }
-        .brand-list li { padding: 12px 15px; cursor: pointer; border-radius: 8px; transition: background 0.2s; font-size: 13px; color: #a0aec0; margin-bottom: 4px; user-select: none; }
-        .brand-list li:hover { background: #2d2f39; color: #fff; }
-        .active { background: #3b82f6 !important; color: #fff !important; font-weight: 600 !important; }
-        
-        /* Filtreleme Inputları */
-        .filter-box { display: flex; gap: 10px; align-items: center; background: #fff; padding: 10px; border-radius: 12px; border: 1px solid #eee; }
-        .filter-box input { border: 1px solid #ddd; padding: 8px; border-radius: 8px; font-family: inherit; font-size: 13px; }
-        .filter-btn { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.2s; }
-        .filter-btn:hover { background: #2563eb; }
+        :root { 
+            --primary: #4680ff; 
+            --bg: #f8f9fa; 
+            --sidebar-bg: #ffffff; 
+            --text-main: #2f3e4e; 
+            --text-muted: #6f7485; 
+            --card-shadow: 0 8px 24px rgba(0,0,0,0.05); 
+            --header-height: 74px; 
+            --border-color: #ebebeb;
+            --sidebar-width: 280px;
+        }
 
-        #menu-toggle { display: none; }
-        #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; backdrop-filter: blur(2px); }
+        * { box-sizing: border-box; }
+        body { font-family: 'Public Sans', sans-serif; background-color: var(--bg); margin: 0; color: var(--text-main); overflow-x: hidden; }
+
+        /* ÜST PANEL (SADECE ARAMA VE SAĞ TARAF) */
+        .master-header {
+            position: fixed;
+            top: 0;
+            left: var(--sidebar-width);
+            right: 0;
+            height: var(--header-height);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 40px;
+        }
+
+        .search-wrapper { 
+            position: relative; background: #f1f5f9; border-radius: 12px; 
+            display: flex; align-items: center; padding: 0 16px; 
+            border: 1px solid transparent; transition: 0.3s; width: 400px;
+        }
+        .search-wrapper:focus-within { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(70, 128, 255, 0.08); }
+        .search-input { width: 100%; border: none; background: transparent; padding: 12px 8px; font-family: inherit; font-size: 14px; outline: none; }
+        .search-shortcut { 
+            font-size: 11px; background: #fff; border: 1px solid #e2e8f0; padding: 3px 7px; border-radius: 6px; 
+            color: var(--text-muted); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center;
+        }
+
+        /* SIDEBAR (LOGO BURAYA TAŞINDI) */
+        .sidebar { 
+            width: var(--sidebar-width); 
+            height: 100vh; 
+            background: var(--sidebar-bg); 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            z-index: 1100; 
+            display: flex; 
+            flex-direction: column; 
+            transition: transform 0.3s;
+            border-right: 1px dashed #d1d5db; /* İstediğin o kesikli dikey çizgi */
+        }
+
+        /* Sidebar içindeki Logo Alanı */
+        .sidebar-logo-section {
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid transparent; /* İsteğe bağlı, temiz dursun diye transparent */
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .brand-logo {
+            max-height: 45px;
+            max-width: 180px;
+            object-fit: contain;
+        }
+
+        .sidebar-content { 
+            flex-grow: 1; 
+            overflow-y: auto; 
+            padding-bottom: 40px;
+            scrollbar-width: none; 
+            -ms-overflow-style: none; 
+        }
+        .sidebar-content::-webkit-scrollbar { display: none; }
+
+        .nav-label { padding: 24px 25px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.2px; opacity: 0.8; }
+        .brand-list { list-style: none; padding: 0 15px; margin: 0; }
+        .brand-list li { padding: 12px 16px; cursor: pointer; border-radius: 10px; transition: all 0.2s; font-size: 13.5px; color: var(--text-main); margin-bottom: 4px; font-weight: 500; display: flex; align-items: center; gap: 14px; }
+        .brand-list li i { width: 20px; text-align: center; font-size: 15px; color: #94a3b8; }
+        .brand-list li:hover { background: #f8fafc; color: var(--primary); }
+        .brand-list li.active { background: #eef4ff !important; color: var(--primary) !important; font-weight: 600 !important; }
+        .brand-list li.active i { color: var(--primary) !important; }
+
+        /* CONTENT */
+        .content { margin-left: var(--sidebar-width); padding: calc(var(--header-height) + 30px) 40px 40px 40px; min-height: 100vh; }
+        
+        .welcome-card { background: linear-gradient(135deg, #4680ff 0%, #1a56db 100%); color: white; padding: 45px; border-radius: 20px; margin-bottom: 35px; box-shadow: 0 12px 30px rgba(70, 128, 255, 0.15); position: relative; overflow: hidden; }
+        .welcome-card h2 { font-size: 32px; margin: 0; font-weight: 700; }
+        .welcome-card p { opacity: 0.9; margin-top: 12px; font-size: 18px; max-width: 600px; line-height: 1.5; }
+        .welcome-card i.bg-icon { position: absolute; right: -20px; bottom: -20px; font-size: 180px; opacity: 0.1; transform: rotate(-15deg); }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { font-size: 24px; font-weight: 700; color: #1e293b; margin: 0; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
+        .card { background: #fff; padding: 24px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.02); transition: 0.3s; position: relative; }
+        .card .value { font-size: 28px; font-weight: 700; color: #0f172a; }
+        .card .unit { font-size: 14px; color: #64748b; font-weight: 500; margin-left: 6px; }
+        .card-icon { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+        #menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1300; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; font-size: 18px; cursor: pointer; }
+        #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1050; backdrop-filter: blur(4px); }
 
         @media (max-width: 992px) {
-            #menu-toggle { display: block; position: fixed; top: 20px; left: 20px; z-index: 1100; background: #3b82f6; color: white; border: none; width: 45px; height: 45px; border-radius: 12px; font-size: 20px; cursor: pointer; }
-            .sidebar { transform: translateX(-100%); width: 280px; }
+            .master-header { left: 0; padding: 0 15px; justify-content: flex-end; }
+            .search-wrapper { width: 180px; }
+            #menu-toggle { display: block; }
+            .sidebar { transform: translateX(-100%); }
             .sidebar.show { transform: translateX(0); }
-            #sidebar-overlay.active { display: block; }
-            .content { margin-left: 0; padding: 20px; padding-top: 85px; }
-            .filter-box {
-                flex-direction: column; 
-                align-items: stretch;  
-                gap: 12px;
-                padding: 15px;
-            }
-
-            .filter-box input {
-                width: 100%;
-                height: 40px; 
-                box-sizing: border-box;
-            }
-
-            .filter-box span {
-                display: none; 
-            }
-
-            .filter-btn {
-                width: 100%;
-                height: 45px;
-            }
+            .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
-<button id="menu-toggle">☰</button>
+<div class="master-header">
+    <div class="search-wrapper">
+        <i class="fa-solid fa-magnifying-glass" style="color: #94a3b8;"></i>
+        <input type="text" id="brand-search" class="search-input" placeholder="Marka veya sektör ara...">
+        <span class="search-shortcut">Ctrl + K</span>
+    </div>
+</div>
+
+<button id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
 <div id="sidebar-overlay"></div>
 
 <div class="sidebar">
-    <h2 onclick="showHome()">BRAND ON</h2>
-    <ul class="brand-list" id="brand-items">
-        <li>NAZİLLİ DAĞI</li>
-        <li>RISLONE</li>
-        <li>BEYS</li>
-        <li>KUP10</li>
-        <li>DEDE COSMETICS</li>
-        <li>BAHCEMDEN YÖRESEL</li>
-        <li>MONTESSİ</li>
-        <li>SOFT</li>
-        <li>2BROTHERS</li>
-        <li>DOGALYASAMDAN</li>
-        <li>EVERHOLD</li>
-        <li>FREYA</li>
-        <li>MANGA MODA</li>
-        <li>PASTABELLİS</li>
-        <li>WAYB</li>
-        <li>LİMPOTECH</li>
-        <li>TARLADAN MUTFAĞA</li>
-        <li>KÖYÜMDEN GELEN SAĞLIK</li>
-        <li>ELYAPİMİYÖRESEL</li>
-        <li>MONRE</li>
-    </ul>
+    <div class="sidebar-logo-section" onclick="showHome()">
+        <img src="brand.svg" alt="logo" class="brand-logo">
+    </div>
+
+    <div class="sidebar-content">
+        <div class="nav-label">Navigasyon</div>
+        <ul class="brand-list">
+            <li onclick="showHome()" class="active" id="dash-btn"><i class="fa-solid fa-chart-pie"></i> DASHBOARD</li>
+        </ul>
+        
+        <div id="sidebar-lists-container">
+            <div class="nav-section">
+                <div class="nav-label">Giyim & Aksesuar</div>
+                <ul class="brand-list">
+                    <li><i class="fa-solid fa-shirt"></i> MONRE</li>
+                    <li><i class="fa-solid fa-user-tie"></i> BEYS</li>
+                    <li><i class="fa-solid fa-scroll"></i> SOFT</li>
+                    <li><i class="fa-solid fa-people-group"></i> 2BROTHERS</li>
+                    <li><i class="fa-solid fa-vest"></i> EVERHOLD</li>
+                    <li><i class="fa-solid fa-gem"></i> FREYA</li>
+                    <li><i class="fa-solid fa-hat-cowboy"></i> MANGA MODA</li>
+                    <li><i class="fa-solid fa-tags"></i> WAYB</li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Doğal Ürünler</div>
+                <ul class="brand-list">
+                    <li><i class="fa-solid fa-leaf"></i> NAZİLLİ DAĞI</li>
+                    <li><i class="fa-solid fa-seedling"></i> BAHCEMDEN YÖRESEL</li>
+                    <li><i class="fa-solid fa-tree"></i> DOGALYASAMDAN</li>
+                    <li><i class="fa-solid fa-basket-shopping"></i> TARLADAN MUTFAĞA</li>
+                    <li><i class="fa-solid fa-heart-pulse"></i> KÖYÜMDEN GELEN SAĞLIK</li>
+                    <li><i class="fa-solid fa-jar"></i> ELYAPİMİYÖRESEL</li>
+                </ul>
+            </div>
+            <div class="nav-section">
+                <div class="nav-label">Otomotiv & Yaşam</div>
+                <ul class="brand-list">
+                    <li><i class="fa-solid fa-car-side"></i> RISLONE</li>
+                    <li><i class="fa-solid fa-gears"></i> KUP10</li>
+                    <li><i class="fa-solid fa-oil-can"></i> LİMPOTECH</li>
+                    <li><i class="fa-solid fa-cake-candles"></i> PASTABELLİS</li>
+                    <li><i class="fa-solid fa-pump-soap"></i> DEDE COSMETICS</li>
+                    <li><i class="fa-solid fa-cubes-stacked"></i> MONTESSİ</li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="content">
     <div id="home-view">
         <div class="welcome-card">
+            <i class="fa-solid fa-rocket bg-icon"></i>
             <h2>Hoş Geldiniz, Patron! 🚀</h2>
-            <p>BrandOn Ajans çatısı altındaki tüm markaların güncel performans verileri hazır.</p>
+            <p>Ajans çatısı altındaki 20 markanın performansı şu an stabil ve canlı olarak n8n üzerinden akıyor.</p>
         </div>
-        <div class="header"><h1>Genel Bakış</h1></div>
+        <div class="header"><h1>Ajans Özeti</h1></div>
         <div class="grid">
-            <div class="card"><h3>Aktif Marka</h3><div class="value">20</div><div class="sub" style="color:#888">Sistemde Kayıtlı</div></div>
-            <div class="card"><h3>Son Güncelleme</h3><div class="value" style="font-size: 18px;">Bugün Canlı</div><div class="sub" style="color:#10b981">Tüm veriler n8n ile bağlı</div></div>
-            <div class="card"><h3>Sistem Durumu</h3><div class="value">Stabil</div><div class="sub" style="color:#3b82f6">Bağlantı Aktif</div></div>
+            <div class="card"><div class="card-icon" style="background: #eef4ff; color: #4680ff;"><i class="fa-solid fa-briefcase"></i></div><h3>Toplam Marka</h3><div class="value">20<span class="unit">Aktif</span></div></div>
+            <div class="card"><div class="card-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-shield-check"></i></div><h3>Sistem Durumu</h3><div class="value" style="color:#10b981">Stabil<span class="unit">Online</span></div></div>
+            <div class="card"><div class="card-icon" style="background: #fff7ed; color: #f59e0b;"><i class="fa-solid fa-bolt"></i></div><h3>Veri Senkronu</h3><div class="value">Aktif<span class="unit">n8n / Canlı</span></div></div>
         </div>
     </div>
 
-    <div id="brand-view">
+    <div id="brand-view" style="display:none;">
         <div class="header">
-            <div>
-                <h1><span id="current-brand">Seçili Marka</span></h1>
-                <small style="color: #888;">Son Veri Girişi: <span id="report-date">--/--/----</span></small>
+            <div><h1><span id="current-brand">Seçili Marka</span></h1><small>Son Veri: <span id="report-date">--/--/----</span></small></div>
+            <div style="display: flex; gap: 10px;">
+                <input type="date" id="start-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
+                <input type="date" id="end-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
+                <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Analiz Et</button>
             </div>
-            
-            <div class="filter-box">
-                <input type="date" id="start-date">
-                <span style="color: #888;">-</span>
-                <input type="date" id="end-date">
-                <button class="filter-btn" onclick="refreshWithDate()">Filtrele</button>
-            </div>
-
-            <div class="date-range" id="date-range">Analiz Aralığı: Belirlenmedi</div>
         </div>
-
+        <div id="date-range" style="margin-bottom:20px; font-weight:600; color:var(--primary);"></div>
         <div class="grid">
             <div class="card"><h3>Toplam Ciro</h3><div class="value" id="total-revenue">0.00<span class="unit">TL</span></div></div>
             <div class="card"><h3>Reklam Harcaması</h3><div class="value" id="total-spend">0.00<span class="unit">TL</span></div></div>
             <div class="card"><h3>ROAS</h3><div class="value" id="roas">0.00</div></div>
-            <div class="card"><h3>Ort. Sepet Tutarı</h3><div class="value" id="avg-order-value">0.00<span class="unit">TL</span></div></div>
-            <div class="card"><h3>Sipariş Sayısı</h3><div class="value" id="order-count">0</div></div>
-            <div class="card"><h3>Tıklamalar</h3><div class="value" id="clicks">0</div></div>
+            <div class="card"><h3>Ort. Sepet</h3><div class="value" id="avg-order-value">0.00<span class="unit">TL</span></div></div>
+            <div class="card"><h3>Sipariş</h3><div class="value" id="order-count">0</div></div>
+            <div class="card"><h3>Tıklama</h3><div class="value" id="clicks">0</div></div>
             <div class="card"><h3>Erişim</h3><div class="value" id="reach">0</div></div>
-            <div class="card"><h3>Mesaj Sayısı</h3><div class="value" id="message-count">0</div></div>
-            <div class="card"><h3>Periyot Ort. Harcama</h3><div class="value" id="daily-avg-spend">0.00<span class="unit">TL</span></div></div>
+            <div class="card"><h3>Mesaj</h3><div class="value" id="message-count">0</div></div>
+            <div class="card"><h3>Günlük Harcama</h3><div class="value" id="daily-avg-spend">0.00<span class="unit">TL</span></div></div>
         </div>
     </div>
 </div>
@@ -163,134 +244,90 @@
     const sidebar = document.querySelector('.sidebar');
     const menuToggle = document.getElementById('menu-toggle');
     const overlay = document.getElementById('sidebar-overlay');
+    const brandSearch = document.getElementById('brand-search');
+    let currentActiveBrand = "";
 
-    let myChart = null;
-    let currentActiveBrand = null;
-
-    // Başlangıç tarihlerini ayarla
-    window.onload = () => {
-        const today = new Date().toISOString().split('T')[0];
-        const lastMonth = new Date();
-        lastMonth.setDate(lastMonth.getDate() - 60); // 60 gün öncesi (2 aylık veri çektik ya)
-        document.getElementById('start-date').value = lastMonth.toISOString().split('T')[0];
-        document.getElementById('end-date').value = today;
-    };
-
-    function showHome() {
-        brandView.style.display = 'none';
-        homeView.style.display = 'block';
-        brandItems.forEach(li => li.classList.remove('active'));
-        if (window.innerWidth <= 992) toggleSidebar();
-    }
-
-    function toggleSidebar() {
-        sidebar.classList.toggle('show');
-        overlay.classList.toggle('active');
-    }
-
-    menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
-    overlay.addEventListener('click', toggleSidebar);
-
-    function refreshWithDate() {
-        if (currentActiveBrand) fetchBrandData(currentActiveBrand);
-    }
-
-    async function fetchBrandData(brandName) {
-        currentActiveBrand = brandName;
-        homeView.style.display = 'none';
-        brandView.style.display = 'block';
-        brandView.style.opacity = '0.5';
-
-        const start = document.getElementById('start-date').value;
-        const end = document.getElementById('end-date').value;
-
-        const { data, error } = await _supabase
-            .from('marketing_reports')
-            .select('*')
-            .eq('brand_name', brandName)
-            .gte('report_date', start)
-            .lte('report_date', end)
-            .order('report_date', { ascending: false });
-
-        brandView.style.opacity = '1';
-
-        if (error || !data.length) {
-            resetValues();
-            document.getElementById('date-range').innerText = "Veri Yok";
-            return;
-        }
-
-        // TOPLAMA İŞLEMİ (AGGREGATION)
-        const totals = data.reduce((acc, curr) => {
-            acc.rev += (curr.revenue || 0);
-            acc.spnd += (curr.spend || 0);
-            acc.ord += (curr.order_count || 0);
-            acc.clk += (curr.clicks || 0);
-            acc.rch += (curr.reach || 0);
-            acc.msg += (curr.messaging_count || 0);
-            return acc;
-        }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0, msg: 0 });
-
-        const roas = totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00";
-        const aov = totals.ord > 0 ? (totals.rev / totals.ord).toFixed(2) : "0.00";
-        const dailyAvg = totals.spnd / data.length;
-
-        const formatMoney = (n) => parseFloat(n).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        const formatInt = (n) => parseInt(n).toLocaleString('tr-TR');
-
-        document.getElementById('total-revenue').innerHTML = `${formatMoney(totals.rev)} <span class="unit">TL</span>`;
-        document.getElementById('total-spend').innerHTML = `${formatMoney(totals.spnd)} <span class="unit">TL</span>`;
-        document.getElementById('roas').innerText = roas;
-        document.getElementById('avg-order-value').innerHTML = `${formatMoney(aov)} <span class="unit">TL</span>`;
-        document.getElementById('order-count').innerText = formatInt(totals.ord);
-        document.getElementById('clicks').innerText = formatInt(totals.clk);
-        document.getElementById('reach').innerText = formatInt(totals.rch);
-        document.getElementById('message-count').innerText = formatInt(totals.msg);
-        document.getElementById('daily-avg-spend').innerHTML = `${formatMoney(dailyAvg)} <span class="unit">TL</span>`;
-        
-        document.getElementById('report-date').innerText = new Date(data[0].report_date).toLocaleDateString('tr-TR');
-        document.getElementById('date-range').innerText = `${new Date(start).toLocaleDateString('tr-TR')} - ${new Date(end).toLocaleDateString('tr-TR')}`;
-        document.getElementById('ai-comment').innerText = data[0].ai_summary || "Seçilen periyot için veri setleri inceleniyor...";
-
-        updateChart(totals.rev, totals.spnd);
-    }
-
-    function resetValues() {
-        document.querySelectorAll('#brand-view .value').forEach(v => v.innerHTML = '--');
-        document.getElementById('ai-comment').innerText = "Veri bulunamadı.";
-    }
-
-    brandItems.forEach(item => {
-        item.addEventListener('click', function() {
-            document.querySelectorAll('.brand-list li').forEach(li => li.classList.remove('active'));
-            this.classList.add('active');
-            brandTitle.innerText = this.innerText;
-            fetchBrandData(this.innerText);
-            if (window.innerWidth <= 992) toggleSidebar();
+    brandSearch.addEventListener('input', (e) => {
+        const term = e.target.value.toLocaleLowerCase('tr');
+        document.querySelectorAll('.nav-section').forEach(section => {
+            let hasMatch = false;
+            section.querySelectorAll('li').forEach(li => {
+                if(li.innerText.toLocaleLowerCase('tr').includes(term)) { li.style.display = 'flex'; hasMatch = true; }
+                else { li.style.display = 'none'; }
+            });
+            section.style.display = hasMatch ? 'block' : 'none';
         });
     });
 
-    function updateChart(revenue, spend) {
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        if (myChart) myChart.destroy();
-        myChart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Reklam Harcaması', 'Net Ciro'],
-                datasets: [{
-                    data: [spend, (revenue - spend) > 0 ? (revenue - spend) : 0],
-                    backgroundColor: ['#ef4444', '#10b981'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '75%',
-                plugins: { legend: { position: 'bottom' } }
-            }
-        });
+    document.addEventListener('keydown', (e) => { if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); brandSearch.focus(); } });
+
+    function toggleSidebar() { sidebar.classList.toggle('show'); overlay.classList.toggle('active'); }
+    menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
+    overlay.addEventListener('click', toggleSidebar);
+
+    function showHome() {
+        brandView.style.display = 'none'; homeView.style.display = 'block';
+        brandItems.forEach(li => li.classList.remove('active'));
+        document.getElementById('dash-btn').classList.add('active');
+        if(window.innerWidth <= 992) toggleSidebar();
     }
+
+    async function setDynamicDates(brandName) {
+        const { data } = await _supabase.from('marketing_reports').select('report_date').eq('brand_name', brandName).order('report_date', { ascending: true });
+        if(data && data.length > 0) {
+            document.getElementById('start-date').value = data[0].report_date;
+            document.getElementById('end-date').value = data[data.length - 1].report_date;
+        }
+    }
+
+    function refreshWithDate() { if(currentActiveBrand) fetchBrandData(currentActiveBrand, false); }
+
+    async function fetchBrandData(brandNameFull, isFirstClick = true) {
+        const brandName = brandNameFull.replace(/<i.*<\/i>/, "").trim();
+        currentActiveBrand = brandNameFull;
+        homeView.style.display = 'none'; brandView.style.display = 'block';
+        document.getElementById('dash-btn').classList.remove('active');
+        if(isFirstClick) await setDynamicDates(brandName);
+
+        const start = document.getElementById('start-date').value;
+        const end = document.getElementById('end-date').value;
+        brandView.style.opacity = '0.5';
+        const { data, error } = await _supabase.from('marketing_reports').select('*').eq('brand_name', brandName).gte('report_date', start).lte('report_date', end).order('report_date', { ascending: false });
+        brandView.style.opacity = '1';
+
+        if(error || !data.length) { resetValues(); document.getElementById('date-range').innerHTML = "Veri bulunamadı!"; return; }
+
+        const totals = data.reduce((acc, curr) => {
+            acc.rev += (curr.revenue || 0); acc.spnd += (curr.spend || 0); acc.ord += (curr.order_count || 0);
+            acc.clk += (curr.clicks || 0); acc.rch += (curr.reach || 0); acc.msg += (curr.messaging_count || 0);
+            return acc;
+        }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0, msg: 0 });
+
+        const formatMoney = (n) => parseFloat(n).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('total-revenue').innerHTML = `${formatMoney(totals.rev)} <span class="unit">TL</span>`;
+        document.getElementById('total-spend').innerHTML = `${formatMoney(totals.spnd)} <span class="unit">TL</span>`;
+        document.getElementById('roas').innerText = totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00";
+        document.getElementById('avg-order-value').innerHTML = `${formatMoney(totals.ord > 0 ? totals.rev / totals.ord : 0)} <span class="unit">TL</span>`;
+        document.getElementById('order-count').innerText = parseInt(totals.ord).toLocaleString('tr-TR');
+        document.getElementById('clicks').innerText = parseInt(totals.clk).toLocaleString('tr-TR');
+        document.getElementById('reach').innerText = parseInt(totals.rch).toLocaleString('tr-TR');
+        document.getElementById('message-count').innerText = parseInt(totals.msg).toLocaleString('tr-TR');
+        document.getElementById('daily-avg-spend').innerHTML = `${formatMoney(totals.spnd / data.length)} <span class="unit">TL</span>`;
+        document.getElementById('report-date').innerText = new Date(data[0].report_date).toLocaleDateString('tr-TR');
+        document.getElementById('date-range').innerText = `Periyot: ${new Date(start).toLocaleDateString('tr-TR')} - ${new Date(end).toLocaleDateString('tr-TR')}`;
+    }
+
+    function resetValues() { document.querySelectorAll('#brand-view .value').forEach(v => v.innerHTML = '--'); }
+
+    brandItems.forEach(item => {
+        item.addEventListener('click', function() {
+            if(this.id === 'dash-btn') return;
+            document.querySelectorAll('.brand-list li').forEach(li => li.classList.remove('active'));
+            this.classList.add('active'); brandTitle.innerText = this.innerText; 
+            fetchBrandData(this.innerHTML, true);
+            if(window.innerWidth <= 992) toggleSidebar();
+        });
+    });
 </script>
 </body>
 </html>
