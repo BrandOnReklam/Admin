@@ -145,23 +145,24 @@
         @media (max-width: 992px) {
             .master-header { 
                 left: 0; 
-                padding: 0 15px; 
-                justify-content: flex-start;
+                padding: 0 15px 0 75px; 
+                justify-content: flex-start; 
                 display: flex;
                 align-items: center;
             }
-            .search-wrapper { 
+           .search-wrapper { 
                 width: 100%; 
-                max-width: calc(100% - 60px); 
-                margin-left: 0;
+                max-width: 100%;
+                margin: 0;
+                height: 42px; 
             }
             #menu-toggle { 
                 display: block; 
-                position: relative; 
-                top: 0; 
-                left: 0; 
-                margin-right: 15px; 
-                flex-shrink: 0;
+                position: fixed; 
+                top: 16px; 
+                left: 16px; 
+                z-index: 1300;
+                margin: 0;
             }
            .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
            .sidebar.show { transform: translateX(0); }
