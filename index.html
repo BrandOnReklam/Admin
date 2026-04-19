@@ -143,13 +143,31 @@
         .login-btn:hover { opacity: 0.9; transform: translateY(-2px); }
         #login-error { color: #ef4444; font-size: 13px; margin-top: 15px; display: none; }
         @media (max-width: 992px) {
-            .master-header { left: 0; padding: 0 15px; justify-content: flex-end; }
-            .search-wrapper { width: 180px; }
-            #menu-toggle { display: block; }
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.show { transform: translateX(0); }
-            .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
-            .search-shortcut { display: none; }
+            .master-header { 
+                left: 0; 
+                padding: 0 15px; 
+                justify-content: flex-start;
+                display: flex;
+                align-items: center;
+            }
+            .search-wrapper { 
+                width: 100%; 
+                max-width: calc(100% - 60px); 
+                margin-left: 0;
+            }
+            #menu-toggle { 
+                display: block; 
+                position: relative; 
+                top: 0; 
+                left: 0; 
+                margin-right: 15px; 
+                flex-shrink: 0;
+            }
+           .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
+           .sidebar.show { transform: translateX(0); }
+           .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
+           #sidebar-overlay { z-index: 1150; }
+           .search-shortcut { display: none; }
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
