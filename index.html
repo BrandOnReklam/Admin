@@ -113,7 +113,24 @@
             .sidebar.show { transform: translateX(0); }
             .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
             .search-shortcut { display: none; }
+
+            /* MOBİL TARİH FİLTRESİ DÜZENLEMESİ */
+            .header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            .filter-group { flex-direction: column; width: 100%; gap: 10px; }
+            .date-inputs { width: 100%; display: flex; gap: 8px; }
+            .date-inputs input { flex: 1; width: 50%; padding: 12px; font-size: 13px; }
+            .action-buttons { width: 100%; display: flex; gap: 8px; }
+            .action-buttons button { flex: 1; justify-content: center; padding: 12px; }
+            
+            /* AI Chat Butonu Kartın Üstüne Binmesin */
+            #ai-toggle-btn { bottom: 15px; right: 15px; width: 50px; height: 50px; }
+            #ai-chat-container { width: calc(100% - 40px); height: 70vh; bottom: 80px; }
         }
+
+        /* YENİ EKLENEN GRUP STİLLERİ (Medya sorgusu dışında kalsın) */
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+        .date-inputs { display: flex; gap: 8px; }
+        .action-buttons { display: flex; gap: 8px; }
     </style>
 </head>
 <body>
@@ -213,12 +230,19 @@
 
     <div id="brand-view" style="display:none;">
         <div class="header">
-            <div><h1><span id="current-brand">Seçili Marka</span></h1><small>Son Veri: <span id="report-date">--/--/----</span></small></div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="date" id="start-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
-                <input type="date" id="end-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
-                <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Analiz Et</button>
-                <button onclick="exportPDF()" style="background:#dc2626; color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+            <div>
+                <h1><span id="current-brand">Seçili Marka</span></h1>
+                <small>Son Veri: <span id="report-date">--/--/----</span></small>
+            </div>
+            <div class="filter-group">
+                <div class="date-inputs">
+                    <input type="date" id="start-date">
+                    <input type="date" id="end-date">
+                </div>
+                <div class="action-buttons">
+                    <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Analiz Et</button>
+                    <button onclick="exportPDF()" style="background:#dc2626; color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+                </div>
             </div>
         </div>
         
