@@ -24,6 +24,63 @@
         body { font-family: 'Public Sans', sans-serif; background-color: var(--bg); margin: 0; color: var(--text-main); overflow-x: hidden; }
         body.no-scroll { overflow: hidden; height: 100vh; }
 
+        .user-profile-box {
+            background: #f1f5f9; /* Soft gri arka plan */
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 15px 20px; /* Sidebar kenarlarından boşluk */
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .user-avatar-wrapper {
+            position: relative;
+            width: 45px;
+            height: 45px;
+        }
+
+        .user-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%; /* Yuvarlak avatar */
+            object-fit: cover;
+        }
+
+        /* Online Durum Noktası (Örnekteki gibi Yeşil) */
+        .status-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            background: #10b981; /* Yeşil online rengi */
+            border-radius: 50%;
+            border: 2px solid #f1f5f9; /* Kutu rengiyle aynı border */
+        }
+
+        .user-info-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .user-role-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+        }
         /* ÜST PANEL */
         .master-header {
             position: fixed; top: 0; left: var(--sidebar-width); right: 0;
@@ -226,10 +283,20 @@
     <div class="sidebar-logo-section" onclick="showHome()">
         <img src="brand.svg" alt="logo" class="brand-logo">
     </div>
+    <div class="user-profile-box">
+            <div class="user-avatar-wrapper">
+                <img src="profil.png" alt="avatar" class="user-avatar-img">
+                <div class="status-badge"></div>
+            </div>
+            <div class="user-info-text">
+                <p class="user-name-label" id="sidebar-user-name">Buğra Kılıçarslan</p>
+                <p class="user-role-label" id="sidebar-user-role">Admin</p>
+            </div>
+        </div>
     <div class="sidebar-content">
         <div class="nav-label">Navigasyon</div>
         <ul class="brand-list">
-            <li onclick="showHome()" class="active" id="dash-btn"><i class="fa-solid fa-chart-pie"></i> DASHBOARD</li>
+            <li onclick="showHome()" class="active" id="dash-btn"><i class="fa-solid fa-chart-pie"></i> Ana Sayfa</li>
         </ul>
         
         <div id="sidebar-lists-container">
