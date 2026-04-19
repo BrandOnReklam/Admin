@@ -6,36 +6,30 @@
     <title>BrandOn | Ajans Yönetim Paneli</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         :root { 
-            --primary: #4680ff; 
-            --bg: #f8f9fa; 
-            --sidebar-bg: #ffffff; 
-            --text-main: #2f3e4e; 
-            --text-muted: #6f7485; 
+            --primary: #4680ff; --bg: #f8f9fa; --sidebar-bg: #ffffff; 
+            --text-main: #2f3e4e; --text-muted: #6f7485; 
             --card-shadow: 0 8px 24px rgba(0,0,0,0.05); 
-            --header-height: 74px; 
-            --border-color: #ebebeb;
-            --sidebar-width: 280px;
+            --header-height: 74px; --border-color: #ebebeb; --sidebar-width: 280px;
         }
 
         * { box-sizing: border-box; }
         body { font-family: 'Public Sans', sans-serif; background-color: var(--bg); margin: 0; color: var(--text-main); overflow-x: hidden; }
+        body.no-scroll { overflow: hidden; height: 100vh; }
 
-        /* ÜST PANEL (SADECE ARAMA VE SAĞ TARAF) */
+        /* ÜST PANEL */
         .master-header {
-            position: fixed;
-            top: 0;
-            left: var(--sidebar-width);
-            right: 0;
-            height: var(--header-height);
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(12px);
-            display: flex;
-            align-items: center;
-            z-index: 1000;
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 40px;
+            position: fixed; top: 0; left: var(--sidebar-width); right: 0;
+            height: var(--header-height); background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px); display: flex; align-items: center;
+            z-index: 1000; border-bottom: 1px solid var(--border-color); padding: 0 40px;
         }
 
         .search-wrapper { 
@@ -45,50 +39,18 @@
         }
         .search-wrapper:focus-within { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(70, 128, 255, 0.08); }
         .search-input { width: 100%; border: none; background: transparent; padding: 12px 8px; font-family: inherit; font-size: 14px; outline: none; }
-        .search-shortcut { 
-            font-size: 11px; background: #fff; border: 1px solid #e2e8f0; padding: 3px 7px; border-radius: 6px; 
-            color: var(--text-muted); font-weight: 600; white-space: nowrap; display: inline-flex; align-items: center;
-        }
+        .search-shortcut { font-size: 11px; background: #fff; border: 1px solid #e2e8f0; padding: 3px 7px; border-radius: 6px; color: var(--text-muted); font-weight: 600; }
 
-        /* SIDEBAR (LOGO BURAYA TAŞINDI) */
+        /* SIDEBAR */
         .sidebar { 
-            width: var(--sidebar-width); 
-            height: 100vh; 
-            background: var(--sidebar-bg); 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            z-index: 1100; 
-            display: flex; 
-            flex-direction: column; 
-            transition: transform 0.3s;
-            border-right: 1px dashed #d1d5db; /* İstediğin o kesikli dikey çizgi */
+            width: var(--sidebar-width); height: 100vh; background: var(--sidebar-bg); 
+            position: fixed; top: 0; left: 0; z-index: 1200; 
+            display: flex; flex-direction: column; transition: transform 0.3s;
+            border-right: 1px dashed #d1d5db; 
         }
-
-        /* Sidebar içindeki Logo Alanı */
-        .sidebar-logo-section {
-            height: var(--header-height);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-bottom: 1px solid transparent; /* İsteğe bağlı, temiz dursun diye transparent */
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .brand-logo {
-            max-height: 45px;
-            max-width: 180px;
-            object-fit: contain;
-        }
-
-        .sidebar-content { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding-bottom: 40px;
-            scrollbar-width: none; 
-            -ms-overflow-style: none; 
-        }
+        .sidebar-logo-section { height: var(--header-height); display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        .brand-logo { max-height: 45px; max-width: 180px; object-fit: contain; }
+        .sidebar-content { flex-grow: 1; overflow-y: auto; padding-bottom: 40px; scrollbar-width: none; -ms-overflow-style: none; }
         .sidebar-content::-webkit-scrollbar { display: none; }
 
         .nav-label { padding: 24px 25px 10px; font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1.2px; opacity: 0.8; }
@@ -97,11 +59,9 @@
         .brand-list li i { width: 20px; text-align: center; font-size: 15px; color: #94a3b8; }
         .brand-list li:hover { background: #f8fafc; color: var(--primary); }
         .brand-list li.active { background: #eef4ff !important; color: var(--primary) !important; font-weight: 600 !important; }
-        .brand-list li.active i { color: var(--primary) !important; }
 
         /* CONTENT */
         .content { margin-left: var(--sidebar-width); padding: calc(var(--header-height) + 30px) 40px 40px 40px; min-height: 100vh; }
-        
         .welcome-card { background: linear-gradient(135deg, #4680ff 0%, #1a56db 100%); color: white; padding: 45px; border-radius: 20px; margin-bottom: 35px; box-shadow: 0 12px 30px rgba(70, 128, 255, 0.15); position: relative; overflow: hidden; }
         .welcome-card h2 { font-size: 32px; margin: 0; font-weight: 700; }
         .welcome-card p { opacity: 0.9; margin-top: 12px; font-size: 18px; max-width: 600px; line-height: 1.5; }
@@ -111,104 +71,67 @@
         .header h1 { font-size: 24px; font-weight: 700; color: #1e293b; margin: 0; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; }
         .card { background: #fff; padding: 24px; border-radius: 16px; box-shadow: var(--card-shadow); border: 1px solid rgba(0,0,0,0.02); transition: 0.3s; position: relative; }
+        .card:hover { transform: translateY(-4px); }
+        .card h3 { margin: 0; font-size: 11.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 18px; font-weight: 700; }
         .card .value { font-size: 28px; font-weight: 700; color: #0f172a; }
         .card .unit { font-size: 14px; color: #64748b; font-weight: 500; margin-left: 6px; }
         .card-icon { position: absolute; top: 20px; right: 20px; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
 
-        #menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1300; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; font-size: 18px; cursor: pointer; }
-        #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.3); z-index: 1050; backdrop-filter: blur(4px); }
+        /* AI CHAT EKRANI */
+        #ai-chat-container {
+            position: fixed; bottom: 20px; right: 20px; width: 350px; height: 450px;
+            background: #fff; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.15);
+            z-index: 1500; display: none; flex-direction: column; overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .chat-header { background: var(--primary); color: #fff; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; font-size: 13px; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px 14px; border-radius: 12px; max-width: 85%; line-height: 1.4; }
+        .msg-ai { background: #f1f5f9; align-self: flex-start; color: #334155; }
+        .msg-user { background: var(--primary); align-self: flex-end; color: #fff; }
+        .chat-input-area { padding: 15px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; }
+        .chat-input-area input { flex: 1; border: none; outline: none; font-size: 14px; }
+        #ai-toggle-btn {
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: var(--primary); color: white; border-radius: 50%; display: flex;
+            align-items: center; justify-content: center; font-size: 24px; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(70, 128, 255, 0.4); z-index: 1499; transition: 0.3s;
+        }
+        #ai-toggle-btn:hover { transform: scale(1.1); }
 
-        
-        #login-screen {
-            position: fixed; inset: 0; background: #f1f5f9;
-            display: flex; align-items: center; justify-content: center; z-index: 9999;
-        }
-        .login-box {
-            background: #fff; padding: 40px; border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center;
-        }
-        .login-box h2 { margin-bottom: 10px; color: #1e293b; }
-        .login-box p { color: #64748b; margin-bottom: 30px; font-size: 14px; }
-        .login-group { margin-bottom: 20px; text-align: left; }
-        .login-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #475569; }
-        .login-group input { 
-            width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; 
-            outline: none; transition: 0.3s; 
-        }
-        .login-group input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(70, 128, 255, 0.1); }
-        .login-btn { 
-            width: 100%; background: var(--primary); color: white; border: none; 
-            padding: 14px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: 0.3s;
-        }
-        .login-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-        #login-error { color: #ef4444; font-size: 13px; margin-top: 15px; display: none; }
+        /* LOGIN & MOBILE FIXES */
+        #login-screen { position: fixed; inset: 0; background: #f1f5f9; display: flex; align-items: center; justify-content: center; z-index: 9999; }
+        .login-box { background: #fff; padding: 40px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+        #sidebar-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.2); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1150; display: none; opacity: 0; transition: 0.3s; }
+        #sidebar-overlay.active { display: block; opacity: 1; }
+        #menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1300; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; }
+
         @media (max-width: 992px) {
-            .master-header { 
-                left: 0; 
-                padding: 0 15px 0 75px; 
-                justify-content: flex-start; 
-                display: flex;
-                align-items: center;
-            }
-           .search-wrapper { 
-                width: 100%; 
-                max-width: 100%;
-                margin: 0;
-                height: 42px; 
-            }
-            #menu-toggle { 
-                display: block; 
-                position: fixed; 
-                top: 16px; 
-                left: 16px; 
-                z-index: 1300;
-                margin: 0;
-            }
-           .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
-           .sidebar.show { transform: translateX(0); }
-           .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
-           #sidebar-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.3); /* Hafif karartı */
-            backdrop-filter: blur(8px); /* İŞTE BUĞU BURADA */
-            -webkit-backdrop-filter: blur(8px); /* Safari desteği */
-            z-index: 1150;
-            display: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        #sidebar-overlay.active {
-            display: block;
-            opacity: 1;
-        }
-        body.no-scroll {
-            overflow: hidden;
-        }
-           .search-shortcut { display: none; }
+            .master-header { left: 0; padding: 0 15px 0 75px; justify-content: flex-start; }
+            .search-wrapper { width: 100%; max-width: 100%; margin: 0; height: 42px; }
+            #menu-toggle { display: block; position: fixed; top: 16px; left: 16px; z-index: 1300; }
+            .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
+            .sidebar.show { transform: translateX(0); }
+            .content { margin-left: 0; padding: calc(var(--header-height) + 20px) 20px 20px 20px; }
+            .search-shortcut { display: none; }
         }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div id="login-screen">
+
+<div id="login-screen">
     <div class="login-box">
         <h2>BrandOn'a Hoş Geldiniz</h2>
         <p>Lütfen devam etmek için giriş yapın.</p>
-        <div class="login-group">
-            <label>Kullanıcı Adı</label>
-            <input type="text" id="username" placeholder="Kullanıcı adınız">
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Kullanıcı Adı</label>
+            <input type="text" id="username" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outline:none;">
         </div>
-        <div class="login-group">
-            <label>Şifre</label>
-            <input type="password" id="password" placeholder="••••••••">
+        <div style="text-align: left; margin-bottom: 20px;">
+            <label style="display:block; font-size:13px; font-weight:600; margin-bottom:8px;">Şifre</label>
+            <input type="password" id="password" style="width:100%; padding:12px; border:1px solid #e2e8f0; border-radius:10px; outline:none;">
         </div>
-        <button class="login-btn" onclick="handleLogin()">Giriş Yap</button>
-        <div id="login-error">Kullanıcı adı veya şifre hatalı!</div>
+        <button onclick="handleLogin()" style="width:100%; background:var(--primary); color:white; border:none; padding:14px; border-radius:10px; font-weight:700; cursor:pointer;">Giriş Yap</button>
+        <div id="login-error" style="color:#ef4444; font-size:13px; margin-top:15px; display:none;">Kullanıcı adı veya şifre hatalı!</div>
     </div>
 </div>
 
@@ -227,7 +150,6 @@
     <div class="sidebar-logo-section" onclick="showHome()">
         <img src="brand.svg" alt="logo" class="brand-logo">
     </div>
-
     <div class="sidebar-content">
         <div class="nav-label">Navigasyon</div>
         <ul class="brand-list">
@@ -274,38 +196,41 @@
     </div>
 </div>
 
-<div class="content">
+<div class="content" id="report-content">
     <div id="home-view">
         <div class="welcome-card">
             <i class="fa-solid fa-rocket bg-icon"></i>
             <h2>Hoş Geldiniz, Patron! 🚀</h2>
-            <p>Ajans çatısı altındaki 20 markanın performansı şu an stabil ve canlı olarak n8n üzerinden akıyor.</p>
+            <p>Ajans çatısı altındaki markaların performansı şu an stabil akıyor.</p>
         </div>
         <div class="header"><h1>Ajans Özeti</h1></div>
         <div class="grid">
-            <div class="card"><div class="card-icon" style="background: #eef4ff; color: #4680ff;"><i class="fa-solid fa-briefcase"></i></div><h3>Toplam Marka</h3><div class="value">20<span class="unit">Aktif</span></div></div>
-            <div class="card"><div class="card-icon" style="background: #ecfdf5; color: #10b981;"><i class="fa-solid fa-shield"></i></div><h3>Sistem Durumu</h3><div class="value" style="color:#10b981">Stabil<span class="unit">Online</span></div></div>
-            <div class="card"><div class="card-icon" style="background: #fff7ed; color: #f59e0b;"><i class="fa-solid fa-bolt"></i></div><h3>Veri Senkronu</h3><div class="value">Aktif<span class="unit">n8n / Canlı</span></div></div>
+            <div class="card"><div class="card-icon" style="background:#eef4ff; color:#4680ff;"><i class="fa-solid fa-briefcase"></i></div><h3>Toplam Marka</h3><div class="value">20<span class="unit">Aktif</span></div></div>
+            <div class="card"><div class="card-icon" style="background:#ecfdf5; color:#10b981;"><i class="fa-solid fa-shield"></i></div><h3>Sistem Durumu</h3><div class="value" style="color:#10b981">Stabil<span class="unit">Online</span></div></div>
+            <div class="card"><div class="card-icon" style="background:#fff7ed; color:#f59e0b;"><i class="fa-solid fa-bolt"></i></div><h3>Veri Senkronu</h3><div class="value">Aktif<span class="unit">n8n</span></div></div>
         </div>
     </div>
 
     <div id="brand-view" style="display:none;">
         <div class="header">
             <div><h1><span id="current-brand">Seçili Marka</span></h1><small>Son Veri: <span id="report-date">--/--/----</span></small></div>
-            <div style="display: flex; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
                 <input type="date" id="start-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
                 <input type="date" id="end-date" style="border:1px solid #ddd; padding:8px; border-radius:8px;">
-                <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Analiz Et</button>
+                <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Analiz Et</button>
+                <button onclick="exportPDF()" style="background:#dc2626; color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;"><i class="fa-solid fa-file-pdf"></i> PDF</button>
             </div>
         </div>
+        
         <div class="card" style="margin-bottom: 24px;">
-    <h3>Performans Grafiği</h3>
-    <div style="position: relative; height: 350px; width: 100%;">
-        <canvas id="performanceChart"></canvas>
-    </div>
-</div>
+            <h3>Performans Grafiği</h3>
+            <div style="position: relative; height: 350px; width: 100%;">
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+
         <div id="date-range" style="margin-bottom:20px; font-weight:600; color:var(--primary);"></div>
-        <div class="grid">
+        <div class="grid" id="metrics-grid">
             <div class="card"><h3>Toplam Ciro</h3><div class="value" id="total-revenue">0.00<span class="unit">TL</span></div></div>
             <div class="card"><h3>Reklam Harcaması</h3><div class="value" id="total-spend">0.00<span class="unit">TL</span></div></div>
             <div class="card"><h3>ROAS</h3><div class="value" id="roas">0.00</div></div>
@@ -319,10 +244,26 @@
     </div>
 </div>
 
+<div id="ai-toggle-btn" onclick="toggleAIChat()"><i class="fa-solid fa-robot"></i></div>
+<div id="ai-chat-container">
+    <div class="chat-header">
+        <span>BrandOn AI Asistan</span>
+        <i class="fa-solid fa-xmark" onclick="toggleAIChat()" style="cursor:pointer;"></i>
+    </div>
+    <div id="chat-messages">
+        <div class="message msg-ai">Merhaba Patron! Bu markanın verileri hakkında ne sormak istersin? Senin için analiz yapabilirim.</div>
+    </div>
+    <div class="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Mesajınızı yazın..." onkeypress="if(event.key==='Enter') sendMessage()">
+        <button onclick="sendMessage()" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+</div>
+
 <script>
     const supabaseUrl = 'https://npcuixdegetaiqylkknu.supabase.co'; 
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wY3VpeGRlZ2V0YWlxeWxra251Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMDkwNjcsImV4cCI6MjA5MDc4NTA2N30.5qfSuiy9d9kWRvT7Vu-cyL9SuJe4dMKAbfjBPFEIVNY'; 
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    const OPENAI_API_KEY = 'BURAYA_OPENAI_KEYINI_YAPISTIR_KRAL'; // KRAL BURAYA KEYİ YAPIŞTIR!
 
     const brandItems = document.querySelectorAll('.brand-list li');
     const brandTitle = document.getElementById('current-brand');
@@ -336,90 +277,40 @@
     let currentUser = null;
     let myChart = null;
 
-    // Sayfa yüklendiğinde oturumu kontrol et
     window.onload = () => {
         const savedUser = localStorage.getItem('brandOn_session');
-        if (savedUser) {
-            currentUser = JSON.parse(savedUser);
-            applyPermissions();
-        }
+        if (savedUser) { currentUser = JSON.parse(savedUser); applyPermissions(); }
     };
 
     async function handleLogin() {
         const user = document.getElementById('username').value;
         const pass = document.getElementById('password').value;
-        const errorEl = document.getElementById('login-error');
-
-        const { data, error } = await _supabase
-            .from('users_access')
-            .select('*')
-            .eq('username', user)
-            .eq('password', pass)
-            .single();
-
-        if (data) {
-            currentUser = data;
-            localStorage.setItem('brandOn_session', JSON.stringify(data));
-            applyPermissions();
-        } else {
-            errorEl.style.display = 'block';
-        }
+        const { data, error } = await _supabase.from('users_access').select('*').eq('username', user).eq('password', pass).single();
+        if (data) { currentUser = data; localStorage.setItem('brandOn_session', JSON.stringify(data)); applyPermissions(); }
+        else { document.getElementById('login-error').style.display = 'block'; }
     }
 
     function applyPermissions() {
         document.getElementById('login-screen').style.display = 'none';
-        
         if (currentUser.role === 'client') {
-            // 1. Diğer markaları ve Dashboard'u gizle
             document.getElementById('sidebar-lists-container').style.display = 'none';
             document.getElementById('dash-btn').style.display = 'none'; 
-            
-            // 2. Sadece kendi markasını gösteren butonu ekle (Tekrar eklenmemesi için kontrol)
             if(!document.getElementById('client-brand-nav')) {
-                const myBrandHtml = `<div id="client-brand-nav">
-                                        <div class="nav-label">Yetkili Markanız</div>
-                                        <ul class="brand-list">
-                                            <li class="active"><i class="fa-solid fa-star"></i> ${currentUser.brand_name}</li>
-                                            <li onclick="logout()" style="color: #ef4444; margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> ÇIKIŞ YAP</li>
-                                        </ul>
-                                     </div>`;
-                document.querySelector('.sidebar-content').insertAdjacentHTML('beforeend', myBrandHtml);
+                const html = `<div id="client-brand-nav"><div class="nav-label">Yetkili Markanız</div><ul class="brand-list"><li class="active"><i class="fa-solid fa-star"></i> ${currentUser.brand_name}</li><li onclick="logout()" style="color:#ef4444; margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> ÇIKIŞ YAP</li></ul></div>`;
+                document.querySelector('.sidebar-content').insertAdjacentHTML('beforeend', html);
             }
-            
             brandTitle.innerText = currentUser.brand_name;
             fetchBrandData(currentUser.brand_name, true);
-        } else {
-            // Admin girişi ise Dashboard'u aç
-            showHome();
-        }
+        } else { showHome(); }
     }
 
-    function logout() {
-        localStorage.removeItem('brandOn_session');
-        location.reload();
+    function logout() { localStorage.removeItem('brandOn_session'); location.reload(); }
+
+    function toggleSidebar() { 
+        const isShowing = sidebar.classList.toggle('show'); 
+        overlay.classList.toggle('active');
+        document.body.classList.toggle('no-scroll', isShowing);
     }
-
-    brandSearch.addEventListener('input', (e) => {
-        const term = e.target.value.toLocaleLowerCase('tr');
-        document.querySelectorAll('.nav-section').forEach(section => {
-            let hasMatch = false;
-            section.querySelectorAll('li').forEach(li => {
-                if(li.innerText.toLocaleLowerCase('tr').includes(term)) { li.style.display = 'flex'; hasMatch = true; }
-                else { li.style.display = 'none'; }
-            });
-            section.style.display = hasMatch ? 'block' : 'none';
-        });
-    });
-
-    document.addEventListener('keydown', (e) => { if((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); brandSearch.focus(); } });
-
-    function toggleSidebar() { sidebar.classList.toggle('show'); overlay.classList.toggle('active');
-        if (sidebar.classList.contains('show')) {
-        document.body.classList.add('no-scroll');
-    } else {
-        document.body.classList.remove('no-scroll');
-    }
-     }
     menuToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleSidebar(); });
     overlay.addEventListener('click', toggleSidebar);
 
@@ -438,31 +329,18 @@
         }
     }
 
-    function refreshWithDate() { if(currentActiveBrand) fetchBrandData(currentActiveBrand, false); }
-
     async function fetchBrandData(brandNameFull, isFirstClick = true) {
         let brandName = brandNameFull.replace(/<i.*<\/i>/, "").trim();
-
-        // GÜVENLİK KİLİDİ: Eğer firma sahibiyse sadece kendi markasını çekebilir
-        if (currentUser && currentUser.role === 'client') {
-            brandName = currentUser.brand_name;
-        }
-
+        if (currentUser && currentUser.role === 'client') brandName = currentUser.brand_name;
         currentActiveBrand = brandName;
         homeView.style.display = 'none'; brandView.style.display = 'block';
-        if(currentUser && currentUser.role === 'admin') {
-            document.getElementById('dash-btn').classList.remove('active');
-        }
-
         if(isFirstClick) await setDynamicDates(brandName);
 
         const start = document.getElementById('start-date').value;
         const end = document.getElementById('end-date').value;
-        brandView.style.opacity = '0.5';
         const { data, error } = await _supabase.from('marketing_reports').select('*').eq('brand_name', brandName).gte('report_date', start).lte('report_date', end).order('report_date', { ascending: false });
-        brandView.style.opacity = '1';
 
-        if(error || !data.length) { resetValues(); document.getElementById('date-range').innerHTML = "Veri bulunamadı!"; return; }
+        if(!data || !data.length) { resetValues(); document.getElementById('date-range').innerHTML = "Veri bulunamadı!"; return; }
         updateChart(data);
 
         const totals = data.reduce((acc, curr) => {
@@ -471,21 +349,99 @@
             return acc;
         }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0, msg: 0 });
 
-        const formatMoney = (n) => parseFloat(n).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        document.getElementById('total-revenue').innerHTML = `${formatMoney(totals.rev)} <span class="unit">TL</span>`;
-        document.getElementById('total-spend').innerHTML = `${formatMoney(totals.spnd)} <span class="unit">TL</span>`;
+        const f = (n) => parseFloat(n).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
+        document.getElementById('total-revenue').innerHTML = `${f(totals.rev)} <span class="unit">TL</span>`;
+        document.getElementById('total-spend').innerHTML = `${f(totals.spnd)} <span class="unit">TL</span>`;
         document.getElementById('roas').innerText = totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00";
-        document.getElementById('avg-order-value').innerHTML = `${formatMoney(totals.ord > 0 ? totals.rev / totals.ord : 0)} <span class="unit">TL</span>`;
+        document.getElementById('avg-order-value').innerHTML = `${f(totals.ord > 0 ? totals.rev / totals.ord : 0)} <span class="unit">TL</span>`;
         document.getElementById('order-count').innerText = parseInt(totals.ord).toLocaleString('tr-TR');
         document.getElementById('clicks').innerText = parseInt(totals.clk).toLocaleString('tr-TR');
         document.getElementById('reach').innerText = parseInt(totals.rch).toLocaleString('tr-TR');
         document.getElementById('message-count').innerText = parseInt(totals.msg).toLocaleString('tr-TR');
-        document.getElementById('daily-avg-spend').innerHTML = `${formatMoney(totals.spnd / data.length)} <span class="unit">TL</span>`;
+        document.getElementById('daily-avg-spend').innerHTML = `${f(totals.spnd / data.length)} <span class="unit">TL</span>`;
         document.getElementById('report-date').innerText = new Date(data[0].report_date).toLocaleDateString('tr-TR');
         document.getElementById('date-range').innerText = `Periyot: ${new Date(start).toLocaleDateString('tr-TR')} - ${new Date(end).toLocaleDateString('tr-TR')}`;
     }
 
     function resetValues() { document.querySelectorAll('#brand-view .value').forEach(v => v.innerHTML = '--'); }
+
+    function updateChart(data) {
+        const ctx = document.getElementById('performanceChart').getContext('2d');
+        if (myChart) myChart.destroy();
+        const sorted = [...data].reverse();
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: sorted.map(d => new Date(d.report_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })),
+                datasets: [
+                    { label: 'Ciro (TL)', data: sorted.map(d => d.revenue), borderColor: '#4680ff', backgroundColor: 'rgba(70, 128, 255, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Harcama (TL)', data: sorted.map(d => d.spend), borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', align: 'end' } } }
+        });
+    }
+
+    // PDF RAPORLAMA FONKSİYONU
+    async function exportPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('p', 'mm', 'a4');
+        const content = document.getElementById('report-content');
+        const canvas = await html2canvas(content, { scale: 2 });
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = 210;
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        doc.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+        doc.save(`${currentActiveBrand}_Rapor_${new Date().toLocaleDateString('tr-TR')}.pdf`);
+    }
+
+    // AI CHAT FONKSİYONLARI
+    function toggleAIChat() {
+        const chat = document.getElementById('ai-chat-container');
+        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chat-input');
+        const msg = input.value.trim();
+        if(!msg) return;
+
+        addMessage(msg, 'user');
+        input.value = '';
+
+        // Ekranda o an olan verileri AI için topla
+        const metrics = {
+            marka: currentActiveBrand,
+            ciro: document.getElementById('total-revenue').innerText,
+            harcama: document.getElementById('total-spend').innerText,
+            roas: document.getElementById('roas').innerText
+        };
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${OPENAI_API_KEY}` },
+                body: JSON.stringify({
+                    model: "gpt-4o",
+                    messages: [{ role: "system", content: "Sen bir dijital pazarlama uzmanısın. Kullanıcı sana markasının verilerini veriyor. Bu verilere göre kısa ve profesyonel yorumlar yap." }, 
+                               { role: "user", content: `Marka: ${metrics.marka}, Ciro: ${metrics.ciro}, Harcama: ${metrics.harcama}, ROAS: ${metrics.roas}. Sorum: ${msg}` }]
+                })
+            });
+            const data = await response.json();
+            addMessage(data.choices[0].message.content, 'ai');
+        } catch (e) {
+            addMessage("Kral API Key hatası olabilir, bi kontrol et istersen.", 'ai');
+        }
+    }
+
+    function addMessage(text, side) {
+        const container = document.getElementById('chat-messages');
+        const div = document.createElement('div');
+        div.className = `message msg-${side}`;
+        div.innerText = text;
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    }
 
     brandItems.forEach(item => {
         item.addEventListener('click', function() {
@@ -496,97 +452,6 @@
             if(window.innerWidth <= 992) toggleSidebar();
         });
     });
-    function updateChart(data) {
-    const ctx = document.getElementById('performanceChart').getContext('2d');
-    
-    // Eğer önceden bir grafik varsa sil (yoksa üst üste biner)
-    if (myChart) { myChart.destroy(); }
-
-    // Supabase'den gelen veriyi tarihe göre sıralayalım (Grafik soldan sağa aksın)
-    const sortedData = [...data].reverse(); // Veriyi tarihe göre çevirir
-
-    const labels = sortedData.map(item => new Date(item.report_date).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' }));
-    const revenueData = sortedData.map(item => item.revenue || 0);
-    const spendData = sortedData.map(item => item.spend || 0);
-
-    myChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Ciro (TL)',
-                    data: revenueData,
-                    borderColor: '#4680ff',
-                    backgroundColor: 'rgba(70, 128, 255, 0.1)',
-                    fill: true,
-                    tension: 0.4, // Çizgiyi ikas'taki gibi oval yapar
-                    pointRadius: 4
-                },
-                {
-                    label: 'Reklam Harcaması (TL)',
-                    data: spendData,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 4
-                }
-            ]
-        },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false, // Yüksekliği div'e göre sabitler, uzayıp gitmez
-        layout: {
-            padding: {
-                top: 20,
-                bottom: 10,
-                left: 10,
-                right: 10
-            }
-        },
-        plugins: {
-            legend: { 
-                position: 'top',
-                align: 'end',
-                labels: { boxWidth: 12, usePointStyle: true, font: { size: 12, weight: '600' } }
-            },
-            tooltip: {
-                mode: 'index',
-                intersect: false,
-                backgroundColor: '#1e293b',
-                titleFont: { size: 14, weight: '700' },
-                bodyFont: { size: 13 },
-                padding: 12,
-                displayColors: true,
-                cornerRadius: 10,
-                bodySpacing: 6
-            }
-        },
-        scales: {
-            y: { 
-                beginAtZero: true, 
-                grid: { color: '#f1f5f9', drawBorder: false },
-                ticks: {
-                    callback: function(value) {
-                        if (value >= 1000) return value / 1000 + 'k ₺';
-                        return value + ' ₺';
-                    }
-                }
-            },
-            x: { 
-                grid: { display: false, drawBorder: false },
-                ticks: { font: { size: 11 } }
-            }
-        },
-        interaction: {
-            mode: 'nearest',
-            axis: 'x',
-            intersect: false
-        }
-    }
-    });
-}
 </script>
 </body>
 </html>
