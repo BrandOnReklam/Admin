@@ -178,6 +178,18 @@
         color: var(--primary);
         border: 1px solid rgba(70, 128, 255, 0.2);
     }
+        .trend-badge {
+        font-size: 12px;
+        padding: 2px 8px;
+        border-radius: 20px;
+        margin-left: 10px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .trend-up { background: #ecfdf5; color: #10b981; } 
+    .trend-down { background: #fef2f2; color: #ef4444; } 
     </style>
 </head>
 <body>
@@ -402,28 +414,67 @@
 
     async function fetchBrandData(brandNameFull, isFirstClick = true) {
         let brandName = brandNameFull.replace(/<i.*<\/i>/, "").trim();
-        if (currentUser && currentUser.role === 'client') brandName = currentUser.brand_name;
+        if (currentUser.role === 'client') brandName = currentUser.brand_name;
+        
         currentActiveBrand = brandName;
+        document.getElementById('current-brand').innerText = brandName;
         homeView.style.display = 'none'; brandView.style.display = 'block';
+
         if(isFirstClick) await setDynamicDates(brandName);
 
         const start = document.getElementById('start-date').value;
         const end = document.getElementById('end-date').value;
-        const { data, error } = await _supabase.from('marketing_reports').select('*').eq('brand_name', brandName).gte('report_date', start).lte('report_date', end).order('report_date', { ascending: false });
+        
+        const { data, error } = await _supabase.from('marketing_reports')
+            .select('*')
+            .eq('brand_name', brandName)
+            .gte('report_date', start)
+            .lte('report_date', end)
+            .order('report_date', { ascending: false });
 
-        if(!data || !data.length) { resetValues(); document.getElementById('date-range').innerHTML = "Veri bulunamadı!"; return; }
+        if (error || !data || data.length === 0) { 
+            resetValues(); 
+            document.getElementById('date-range').innerHTML = "Veri bulunamadı!"; 
+            return; 
+        }
+
         updateChart(data);
 
+        // --- TREND HESAPLAMA MANTIĞI BAŞLANGIÇ ---
+        const mid = Math.ceil(data.length / 2);
+        const yeniDonem = data.slice(0, mid);
+        const eskiDonem = data.slice(mid);
+
+        const trendHesapla = (key) => {
+            const yeniTop = yeniDonem.reduce((s, c) => s + (c[key] || 0), 0);
+            const eskiTop = eskiDonem.reduce((s, c) => s + (c[key] || 0), 0);
+            if (eskiTop === 0) return "";
+            const fark = ((yeniTop - eskiTop) / eskiTop) * 100;
+            const ikon = fark >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
+            const renk = fark >= 0 ? 'trend-up' : 'trend-down';
+            return `<span class="trend-badge ${renk}"><i class="fa-solid ${ikon}"></i> %${Math.abs(fark).toFixed(1)}</span>`;
+        };
+        // --- TREND HESAPLAMA MANTIĞI BİTİŞ ---
+
         const totals = data.reduce((acc, curr) => {
-            acc.rev += (curr.revenue || 0); acc.spnd += (curr.spend || 0); acc.ord += (curr.order_count || 0);
-            acc.clk += (curr.clicks || 0); acc.rch += (curr.reach || 0); acc.msg += (curr.messaging_count || 0);
+            acc.rev += (curr.revenue || 0); 
+            acc.spnd += (curr.spend || 0); 
+            acc.ord += (curr.order_count || 0);
+            acc.clk += (curr.clicks || 0); 
+            acc.rch += (curr.reach || 0); 
+            acc.msg += (curr.messaging_count || 0);
             return acc;
         }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0, msg: 0 });
 
         const f = (n) => parseFloat(n).toLocaleString('tr-TR', { minimumFractionDigits: 2 });
-        document.getElementById('total-revenue').innerHTML = `${f(totals.rev)} <span class="unit">TL</span>`;
-        document.getElementById('total-spend').innerHTML = `${f(totals.spnd)} <span class="unit">TL</span>`;
-        document.getElementById('roas').innerText = totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00";
+        
+        // Değerleri Ekrana Yazdırırken Trendleri Yanına Ekle
+        document.getElementById('total-revenue').innerHTML = `${f(totals.rev)} <span class="unit">TL</span> ${trendHesapla('revenue')}`;
+        document.getElementById('total-spend').innerHTML = `${f(totals.spnd)} <span class="unit">TL</span> ${trendHesapla('spend')}`;
+        
+        const currentRoas = totals.spnd > 0 ? (totals.rev / totals.spnd) : 0;
+        document.getElementById('roas').innerHTML = `${currentRoas.toFixed(2)} ${trendHesapla('revenue')}`;
+        
         document.getElementById('avg-order-value').innerHTML = `${f(totals.ord > 0 ? totals.rev / totals.ord : 0)} <span class="unit">TL</span>`;
         document.getElementById('order-count').innerText = parseInt(totals.ord).toLocaleString('tr-TR');
         document.getElementById('clicks').innerText = parseInt(totals.clk).toLocaleString('tr-TR');
