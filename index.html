@@ -11,6 +11,9 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/tr.js"></script>
 
     <style>
         :root { 
@@ -362,8 +365,8 @@
             </div>
             <div class="filter-group">
                 <div class="date-inputs">
-                    <input type="date" id="start-date">
-                    <input type="date" id="end-date">
+                    <input type="text" id="start-date">
+                    <input type="text" id="end-date">
                 </div>
                 <div class="action-buttons">
                     <button onclick="refreshWithDate()" style="background:var(--primary); color:white; border:none; padding:10px 18px; border-radius:10px; cursor:pointer; font-weight:600;">Analiz Et</button>
@@ -426,10 +429,21 @@
     let currentActiveBrand = "";
     let currentUser = null;
     let myChart = null;
+    let startPicker, endPicker;
 
     window.onload = () => {
         const savedUser = localStorage.getItem('brandOn_session');
         if (savedUser) { currentUser = JSON.parse(savedUser); applyPermissions(); }
+
+        // Flatpickr başlatma - sadece görünüm için Türkçe
+        const fpConfig = {
+            altInput: true,
+            altFormat: "d/m/Y",
+            dateFormat: "Y-m-d",
+            locale: "tr"
+        };
+        startPicker = flatpickr("#start-date", fpConfig);
+        endPicker = flatpickr("#end-date", fpConfig);
     };
 
     async function handleLogin() {
@@ -474,8 +488,8 @@
     async function setDynamicDates(brandName) {
         const { data } = await _supabase.from('marketing_reports').select('report_date').eq('brand_name', brandName).order('report_date', { ascending: true });
         if(data && data.length > 0) {
-            document.getElementById('start-date').value = data[0].report_date;
-            document.getElementById('end-date').value = data[data.length - 1].report_date;
+            startPicker.setDate(data[0].report_date);
+            endPicker.setDate(data[data.length - 1].report_date);
         }
     }
 
