@@ -507,21 +507,32 @@
 
         updateChart(data);
 
-        // --- TREND HESAPLAMA MANTIĞI BAŞLANGIÇ ---
-        const mid = Math.ceil(data.length / 2);
-        const yeniDonem = data.slice(0, mid);
-        const eskiDonem = data.slice(mid);
+        // Önceki dönem tarihlerini hesapla
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        const selectedDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1; // Seçilen gün sayısı
+        const prevEnd = new Date(startDate);
+        prevEnd.setDate(prevEnd.getDate() - 1);
+        const prevStart = new Date(prevEnd);
+        prevStart.setDate(prevStart.getDate() - selectedDays + 1);
 
+        // Önceki dönem verisini çek
+        const { data: prevData } = await _supabase.from('marketing_reports')
+            .select('*')
+            .eq('brand_name', brandName)
+            .gte('report_date', prevStart.toISOString().split('T')[0])
+            .lte('report_date', prevEnd.toISOString().split('T')[0]);
+
+        // Trend hesaplama fonksiyonu
         const trendHesapla = (key) => {
-            const yeniTop = yeniDonem.reduce((s, c) => s + (c[key] || 0), 0);
-            const eskiTop = eskiDonem.reduce((s, c) => s + (c[key] || 0), 0);
-            if (eskiTop === 0) return "";
-            const fark = ((yeniTop - eskiTop) / eskiTop) * 100;
+            const selectedTotal = data.reduce((s, c) => s + (c[key] || 0), 0);
+            const prevTotal = prevData ? prevData.reduce((s, c) => s + (c[key] || 0), 0) : 0;
+            if (prevTotal === 0) return "";
+            const fark = ((selectedTotal - prevTotal) / prevTotal) * 100;
             const ikon = fark >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
             const renk = fark >= 0 ? 'trend-up' : 'trend-down';
             return `<span class="trend-badge ${renk}"><i class="fa-solid ${ikon}"></i> %${Math.abs(fark).toFixed(1)}</span>`;
         };
-        // --- TREND HESAPLAMA MANTIĞI BİTİŞ ---
 
         const totals = data.reduce((acc, curr) => {
             acc.rev += (curr.revenue || 0); 
