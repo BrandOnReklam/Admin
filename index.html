@@ -652,6 +652,9 @@
         container.scrollTop = container.scrollHeight;
     }
 
+        function refreshWithDate() {
+    fetchBrandData(currentActiveBrand, false);
+}
     brandItems.forEach(item => {
         item.addEventListener('click', function() {
             if(this.id === 'dash-btn') return;
@@ -661,9 +664,6 @@
             if(window.innerWidth <= 992) toggleSidebar();
         });
     });
-    function refreshWithDate() {
-    fetchBrandData(currentActiveBrand, false);
-}
 </script>
 </body>
 </html>
