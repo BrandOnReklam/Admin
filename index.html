@@ -447,6 +447,13 @@
         };
         startPicker = flatpickr("#start-date", fpConfig);
         endPicker = flatpickr("#end-date", fpConfig);
+
+        // YENİ: Enter tuşuna basınca giriş yap
+        document.getElementById('password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
     };
 
     async function handleLogin() {
