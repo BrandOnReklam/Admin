@@ -434,6 +434,13 @@
     let myChart = null;
     let startPicker, endPicker;
 
+    // Ctrl+K kısayolu için
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'k') {
+            e.preventDefault();  // Tarayıcının varsayılan Ctrl+K'sini engelle
+            document.getElementById('brand-search').focus();  // Arama input'una odaklan
+        }
+    });
     window.onload = () => {
         const savedUser = localStorage.getItem('brandOn_session');
         if (savedUser) { currentUser = JSON.parse(savedUser); applyPermissions(); }
