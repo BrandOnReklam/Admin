@@ -461,6 +461,23 @@
                 handleLogin();
             }
         });
+        // Arama işlevi
+        const brandSearch = document.getElementById('brand-search');
+        brandSearch.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();  
+            const brandItems = document.querySelectorAll('.brand-list li');  
+            
+            brandItems.forEach(item => {
+                if (item.id === 'dash-btn') return; 
+                
+                const text = item.textContent.toLowerCase();  
+                if (text.includes(query)) {
+                    item.style.display = 'flex';  
+                } else {
+                    item.style.display = 'none';  
+                }
+            });
+        });
     };
 
     async function handleLogin() {
