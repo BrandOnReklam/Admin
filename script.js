@@ -309,6 +309,36 @@
         function refreshWithDate() {
     fetchBrandData(currentActiveBrand, false);
 }
+    // Mobil Swipe İşlevi - Metrikleri Kaydırma
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const metricsGrid = document.getElementById('metrics-grid');
+    
+    if(metricsGrid) {
+        metricsGrid.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, false);
+        
+        metricsGrid.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, false);
+    }
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if(Math.abs(diff) > swipeThreshold && metricsGrid) {
+            const scrollAmount = window.innerWidth - 60;
+            if(diff > 0) {
+                metricsGrid.scrollLeft += scrollAmount;
+            } else {
+                metricsGrid.scrollLeft -= scrollAmount;
+            }
+        }
+    }
+
     brandItems.forEach(item => {
         item.addEventListener('click', function() {
             if(this.id === 'dash-btn') return;
