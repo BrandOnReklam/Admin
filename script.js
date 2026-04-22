@@ -3,6 +3,19 @@
     const _supabase = supabase.createClient(supabaseUrl, supabaseKey);
     const OPENAI_API_KEY = 'BURAYA_OPENAI_KEYINI_YAPISTIR_KRAL'; // KRAL BURAYA KEYİ YAPIŞTIR!
 
+    // Türkçe karakterleri normalize eden fonksiyon
+    function normalizeTurkish(text) {
+        return text
+            .toLocaleLowerCase('tr-TR')
+            .replace(/ı/g, 'i')
+            .replace(/ş/g, 's')
+            .replace(/ğ/g, 'g')
+            .replace(/ü/g, 'u')
+            .replace(/ö/g, 'o')
+            .replace(/ç/g, 'c')
+            .trim();
+    }
+
     const brandItems = document.querySelectorAll('.brand-list li');
     const brandTitle = document.getElementById('current-brand');
     const brandView = document.getElementById('brand-view');
@@ -43,16 +56,16 @@
                 handleLogin();
             }
         });
-        // Arama işlevi
+        // Arama işlevi - Türkçe karakterlerle tutarlı arama
         const brandSearch = document.getElementById('brand-search');
         brandSearch.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();  
+            const query = normalizeTurkish(this.value);  
             const brandItems = document.querySelectorAll('.brand-list li');  
             
             brandItems.forEach(item => {
                 if (item.id === 'dash-btn') return; 
                 
-                const text = item.textContent.toLowerCase();  
+                const text = normalizeTurkish(item.textContent);  
                 if (text.includes(query)) {
                     item.style.display = 'flex';  
                 } else {
