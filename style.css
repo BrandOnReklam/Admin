@@ -82,6 +82,8 @@
         .search-wrapper:focus-within { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(70, 128, 255, 0.08); }
         .search-input { width: 100%; border: none; background: transparent; padding: 12px 8px; font-family: inherit; font-size: 14px; outline: none; }
         .search-shortcut { font-size: 11px; background: #fff; border: 1px solid #e2e8f0; padding: 3px 7px; border-radius: 6px; color: var(--text-muted); font-weight: 600; }
+        
+        .pdf-filters-group { display: none; gap: 10px; align-items: center; margin: 0 20px; }
 
         /* SIDEBAR */
         .sidebar { 
@@ -171,6 +173,13 @@
             /* AI Chat Butonu Kartın Üstüne Binmesin */
             #ai-toggle-btn { bottom: 15px; right: 15px; width: 50px; height: 50px; }
             #ai-chat-container { width: calc(100% - 40px); height: 70vh; bottom: 80px; }
+            
+            /* Test PDF Butonu Mobil */
+            #test-pdf-btn { padding: 10px 12px; font-size: 13px; }
+            
+            /* PDF Filtreleri Mobil */
+            .pdf-filters-group { flex-direction: column; gap: 8px; margin: 0 10px; }
+            #header-brand-select, #header-start-date, #header-end-date { width: 100% !important; }
         }
 
         /* YENİ EKLENEN GRUP STİLLERİ (Medya sorgusu dışında kalsın) */

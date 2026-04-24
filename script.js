@@ -49,6 +49,13 @@
         };
         startPicker = flatpickr("#start-date", fpConfig);
         endPicker = flatpickr("#end-date", fpConfig);
+        
+        // Header tarih inputları için Flatpickr
+        flatpickr("#header-start-date", fpConfig);
+        flatpickr("#header-end-date", fpConfig);
+        
+        // Marka dropdown'ını doldur
+        populateBrandDropdown();
 
         // YENİ: Enter tuşuna basınca giriş yap
         document.getElementById('password').addEventListener('keypress', function(e) {
@@ -88,6 +95,9 @@
         if (currentUser.role === 'client') {
             document.getElementById('sidebar-lists-container').style.display = 'none';
             document.getElementById('dash-btn').style.display = 'none'; 
+            document.getElementById('ai-toggle-btn').style.display = 'none';
+            document.getElementById('ai-chat-container').style.display = 'none';
+            document.querySelector('.pdf-filters-group').style.display = 'none';
             if(!document.getElementById('client-brand-nav')) {
                 const html = `<div id="client-brand-nav"><div class="nav-label">Yetkili Markanız</div><ul class="brand-list"><li class="active"><i class="fa-solid fa-star"></i> ${currentUser.brand_name}</li><li onclick="logout()" style="color:#ef4444; margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> ÇIKIŞ YAP</li></ul></div>`;
                 document.querySelector('.sidebar-content').insertAdjacentHTML('beforeend', html);
@@ -109,6 +119,8 @@
 
     function showHome() {
         brandView.style.display = 'none'; homeView.style.display = 'block';
+        document.querySelector('.pdf-filters-group').style.display = 'flex';
+        document.getElementById('test-pdf-btn').style.display = 'flex';
         brandItems.forEach(li => li.classList.remove('active'));
         document.getElementById('dash-btn').classList.add('active');
         if(window.innerWidth <= 992) toggleSidebar();
@@ -129,6 +141,8 @@
         currentActiveBrand = brandName;
         document.getElementById('current-brand').innerText = brandName;
         homeView.style.display = 'none'; brandView.style.display = 'block';
+        document.querySelector('.pdf-filters-group').style.display = 'none';
+        document.getElementById('test-pdf-btn').style.display = 'none';
 
         if(isFirstClick) await setDynamicDates(brandName);
 
@@ -348,3 +362,46 @@
             if(window.innerWidth <= 992) toggleSidebar();
         });
     });
+
+    // Marka dropdown'ını sidebar markaları ile doldur
+    function populateBrandDropdown() {
+        const brandSelect = document.getElementById('header-brand-select');
+        const allBrands = new Set();
+        
+        document.querySelectorAll('.brand-list li').forEach(li => {
+            if (li.id !== 'dash-btn') {
+                const brandName = li.textContent.replace(/\s+/g, ' ').trim();
+                const cleanName = brandName.replace(/<i.*?<\/i>/g, '').trim();
+                if (cleanName) allBrands.add(cleanName);
+            }
+        });
+        
+        allBrands.forEach(brand => {
+            const option = document.createElement('option');
+            option.value = brand;
+            option.textContent = brand;
+            brandSelect.appendChild(option);
+        });
+    }
+    
+    // Header inputlarından PDF oluştur
+    function generateFinalPDFWrapper() {
+        const headerBrand = document.getElementById('header-brand-select').value;
+        const headerStart = document.getElementById('header-start-date').value;
+        const headerEnd = document.getElementById('header-end-date').value;
+        
+        if (!headerBrand || !headerStart || !headerEnd) {
+            alert("Lütfen marka ve tarih aralığı seçin!");
+            return;
+        }
+        
+        // currentActiveBrand'i güncelle
+        currentActiveBrand = headerBrand;
+        
+        // Brand-view inputlarını güncelle
+        document.getElementById('start-date').value = headerStart;
+        document.getElementById('end-date').value = headerEnd;
+        
+        // reporting.js'deki generateFinalPDF'i çağır
+        generateFinalPDF();
+    }

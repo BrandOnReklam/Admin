@@ -41,6 +41,16 @@
         <input type="text" id="brand-search" class="search-input" placeholder="Marka ara...">
         <span class="search-shortcut">Ctrl + K</span>
     </div>
+    <div class="pdf-filters-group">
+        <select id="header-brand-select" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-family: inherit; font-size: 13px; color: #2f3e4e; cursor: pointer; outline: none;">
+            <option value="">Marka Seç...</option>
+        </select>
+        <input type="text" id="header-start-date" placeholder="Başlangıç" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-family: inherit; font-size: 13px; color: #2f3e4e; outline: none; width: 130px;">
+        <input type="text" id="header-end-date" placeholder="Bitiş" style="padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 10px; background: white; font-family: inherit; font-size: 13px; color: #2f3e4e; outline: none; width: 130px;">
+    </div>
+    <button id="test-pdf-btn" onclick="generateFinalPDFWrapper()" style="margin-left: auto; padding: 15px; background: #22c55e; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px;">
+    <i class="fa-solid fa-file-pdf"></i> Tasarımı Test Et
+    </button>
 </div>
 
 <button id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
@@ -179,5 +189,6 @@
     </div>
 </div>
 <script src="script.js"></script>
+<script src="reporting.js"></script>
 </body>
 </html>
