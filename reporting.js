@@ -1,31 +1,13 @@
-// Font'u CDN'den base64'e çeviren fonksiyon
-async function loadFontAsBase64(url) {
-    const response = await fetch(url);
-    const buffer = await response.arrayBuffer();
-    const bytes = new Uint8Array(buffer);
-    let binary = '';
-    for (let i = 0; i < bytes.byteLength; i++) {
-        binary += String.fromCharCode(bytes[i]);
-    }
-    return btoa(binary);
-}
-
 async function createBrandReport(brandData) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // --- TÜRKÇE FONT YÜKLEME (jsDelivr CDN) ---
-    // latin-ext subset: ş ğ ı ü ö ç gibi tüm Türkçe karakterleri içerir
-    const FONT_CDN_REGULAR = 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-ext-400-normal.woff';
-    const FONT_CDN_BOLD    = 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-ext-700-normal.woff';
+    // font-embed.js'den gelen base64 TTF fontları yükle
+    doc.addFileToVFS('Roboto-Regular.ttf', ROBOTO_REGULAR_B64);
+    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
 
-    const fontRegular = await loadFontAsBase64(FONT_CDN_REGULAR);
-    doc.addFileToVFS('Roboto-Regular.woff', fontRegular);
-    doc.addFont('Roboto-Regular.woff', 'Roboto', 'normal');
-
-    const fontBold = await loadFontAsBase64(FONT_CDN_BOLD);
-    doc.addFileToVFS('Roboto-Bold.woff', fontBold);
-    doc.addFont('Roboto-Bold.woff', 'Roboto', 'bold');
+    doc.addFileToVFS('Roboto-Bold.ttf', ROBOTO_BOLD_B64);
+    doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
 
     const primaryYellow = [255, 255, 180];
     const textColor = [30, 41, 59];
@@ -169,7 +151,6 @@ async function generateFinalPDF() {
 
     const doc = await createBrandReport(reportData);
 
-    // Dosya adı için sadece burada Türkçe karakter temizliyoruz
     const safeFileName = brandName
         .replace(/ş/g,'s').replace(/Ş/g,'S')
         .replace(/ı/g,'i').replace(/İ/g,'I')
