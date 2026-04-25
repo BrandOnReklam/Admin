@@ -2,12 +2,8 @@ async function createBrandReport(brandData) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // font-embed.js'den gelen base64 TTF fontları yükle
-    doc.addFileToVFS('Roboto-Regular.ttf', ROBOTO_REGULAR_B64);
-    doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
-
-    doc.addFileToVFS('Roboto-Bold.ttf', ROBOTO_BOLD_B64);
-    doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
+    // ARTIK BURADA FONT YÜKLEME KODU YOK! 
+    // Çünkü fontlar index.html'deki scriptlerden otomatik geliyor.
 
     const primaryYellow = [255, 255, 180];
     const textColor = [30, 41, 59];
@@ -18,7 +14,8 @@ async function createBrandReport(brandData) {
     doc.setFillColor(...primaryYellow);
     doc.roundedRect(15, 15, 180, 40, 8, 8, 'FD'); 
 
-    doc.setFont("Roboto", "bold");
+    // Kalın fontu kullanıyoruz
+    doc.setFont("Roboto-Bold", "bold");
     doc.setTextColor(...textColor);
     doc.setFontSize(22);
     doc.text(brandData.title, 105, 30, { align: "center" });
@@ -26,6 +23,8 @@ async function createBrandReport(brandData) {
     doc.setFontSize(16);
     doc.text(`${brandData.name} x BRAND ON`, 25, 45);
     
+    // Normal fontu kullanıyoruz
+    doc.setFont("Roboto-Regular", "normal");
     doc.setFontSize(10);
     doc.text(`${brandData.startDate} - ${brandData.endDate}`, 185, 45, { align: "right" });
 
@@ -36,23 +35,27 @@ async function createBrandReport(brandData) {
     doc.setDrawColor(0);
     doc.line(105, 60, 95, 105); 
 
-    doc.setFont("Roboto", "normal");
+    doc.setFont("Roboto-Regular", "normal");
     doc.setFontSize(11);
     doc.text("Toplam Ciro", 30, 75);
-    doc.setFont("Roboto", "bold");
+    
+    doc.setFont("Roboto-Bold", "bold");
     doc.setFontSize(20);
     doc.text(`${brandData.revenue}`, 25, 90);
+    
     doc.setFontSize(10);
     doc.setTextColor(...trendGreen);
     doc.text("↑ %18.7", 85, 85);
 
     doc.setTextColor(...textColor);
-    doc.setFont("Roboto", "normal");
+    doc.setFont("Roboto-Regular", "normal");
     doc.setFontSize(11);
     doc.text("Toplam Harcama", 120, 75);
-    doc.setFont("Roboto", "bold");
+    
+    doc.setFont("Roboto-Bold", "bold");
     doc.setFontSize(20);
     doc.text(`${brandData.spend}`, 115, 90);
+    
     doc.setFontSize(10);
     doc.setTextColor(...trendGreen);
     doc.text("↑ %15.2", 175, 85);
@@ -83,15 +86,16 @@ async function createBrandReport(brandData) {
         doc.setFillColor(...primaryYellow);
         doc.roundedRect(x, y, colWidth, rowHeight, 6, 6, 'FD');
 
-        doc.setFont("Roboto", "normal");
+        doc.setFont("Roboto-Regular", "normal");
         doc.setFontSize(9);
         doc.text(m.label, x + 5, y + 10);
-        doc.setFont("Roboto", "bold");
+        
+        doc.setFont("Roboto-Bold", "bold");
         doc.setFontSize(13);
         doc.text(m.value, x + 5, y + 25);
         
         doc.setTextColor(...trendGreen);
-        doc.setFont("Roboto", "normal");
+        doc.setFont("Roboto-Regular", "normal");
         doc.setFontSize(8);
         doc.text(m.trend, x + colWidth - 12, y + 20, { align: "right" });
         doc.setTextColor(...textColor);
@@ -102,8 +106,8 @@ async function createBrandReport(brandData) {
 
 async function generateFinalPDF() {
     const brandName = currentActiveBrand;
-    const start = document.getElementById('start-date').value;
-    const end = document.getElementById('end-date').value;
+    const start = document.getElementById('header-start-date').value || document.getElementById('start-date').value;
+    const end = document.getElementById('header-end-date').value || document.getElementById('end-date').value;
 
     if (!brandName || !start || !end) {
         alert("Lütfen marka ve tarih aralığı seçin!");
