@@ -150,6 +150,39 @@
         #menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1300; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; }
 
         @media (max-width: 992px) {
+            .master-header {
+                height: auto !important;
+                padding: 15px 15px 15px 75px !important;
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+            .search-wrapper {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+                margin-left: 0 !important;
+                gap: 12px !important;
+            }
+            .pdf-filters-group {
+                display: flex !important; 
+                flex-direction: column;
+                width: 100%;
+                margin: 0 !important;
+                gap: 8px;
+            }
+            #header-brand-select, 
+            .pdf-filters-group input {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+            .header-actions button {
+                width: 100% !important;
+                justify-content: center;
+                padding: 12px !important;
+            }
             .master-header { left: 0; padding: 0 15px 0 75px; justify-content: space-between; }
             .search-wrapper { width: 100%; max-width: 100%; margin: 0; height: 42px; }
             #menu-toggle { display: block; position: fixed; top: 16px; left: 16px; z-index: 1300; }
