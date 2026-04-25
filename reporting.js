@@ -165,3 +165,105 @@ async function generateFinalPDF() {
 
     doc.save(`${safeFileName}_${start}_${end}.pdf`);
 }
+async function downloadAllReportsAsZip() {
+    const start = document.getElementById('header-start-date').value || document.getElementById('start-date').value;
+    const end = document.getElementById('header-end-date').value || document.getElementById('end-date').value;
+    const overlay = document.getElementById('loading-overlay');
+    const loadingProgress = document.getElementById('loading-progress');
+    const loadingText = document.getElementById('loading-text');
+
+    if (!start || !end) {
+        alert("Lütfen tüm markalar için tarih aralığı seçin!");
+        return;
+    }
+
+    // 1. Loading ekranını göster
+    overlay.style.display = 'flex';
+    loadingText.innerText = "Marka listesi çekiliyor...";
+
+    try {
+        // 2. Dinamik olarak marka isimlerini çek (Tekil/Unique list)
+        const { data: brandList, error: brandError } = await _supabase
+            .from('marketing_reports')
+            .select('brand_name');
+
+        if (brandError) throw brandError;
+
+        // Benzersiz marka isimlerini bir diziye çıkar
+        const uniqueBrands = [...new Set(brandList.map(item => item.brand_name))];
+        const totalBrands = uniqueBrands.length;
+
+        const zip = new JSZip();
+        const folder = zip.folder(`BrandOn_Raporlari_${start}_${end}`);
+
+        let processedCount = 0;
+
+        for (const brandName of uniqueBrands) {
+            processedCount++;
+            loadingText.innerText = `${brandName} Raporu Hazırlanıyor...`;
+            loadingProgress.innerText = `${processedCount} / ${totalBrands}`;
+
+            // Supabase'den bu marka için verileri çek
+            const { data, error } = await _supabase.from('marketing_reports')
+                .select('*')
+                .eq('brand_name', brandName)
+                .gte('report_date', start)
+                .lte('report_date', end);
+
+            if (error || !data || data.length === 0) {
+                console.warn(`${brandName} için veri yok, geçiliyor...`);
+                continue;
+            }
+
+            // Toplamları hesapla
+            const totals = data.reduce((acc, curr) => {
+                acc.rev  += (curr.revenue || 0);
+                acc.spnd += (curr.spend || 0);
+                acc.ord  += (curr.order_count || 0);
+                acc.clk  += (curr.clicks || 0);
+                acc.rch  += (curr.reach || 0);
+                return acc;
+            }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0 });
+
+            const reportData = {
+                name: brandName,
+                title: "Genel Performans Raporu",
+                startDate: new Date(start).toLocaleDateString('tr-TR'),
+                endDate: new Date(end).toLocaleDateString('tr-TR'),
+                revenue: totals.rev.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL",
+                spend: totals.spnd.toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL",
+                roas: totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00",
+                orderCount: totals.ord.toLocaleString('tr-TR'),
+                clicks: totals.clk.toLocaleString('tr-TR'),
+                reach: totals.rch.toLocaleString('tr-TR'),
+                aov: (totals.ord > 0 ? totals.rev / totals.ord : 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL",
+                dailySpend: (totals.spnd / data.length).toLocaleString('tr-TR', { minimumFractionDigits: 2 }) + " TL"
+            };
+
+            // PDF oluştur (Blob olarak)
+            const doc = await createBrandReport(reportData);
+            const pdfBlob = doc.output('blob');
+            
+            // ZIP'e ekle
+            const safeName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase() + ".pdf";
+            folder.file(safeName, pdfBlob);
+        }
+
+        loadingText.innerText = "ZIP Paketi Oluşturuluyor...";
+        
+        // 3. ZIP oluştur ve indir
+        const content = await zip.generateAsync({ type: "blob" });
+        const zipName = `BrandOn_Toplu_Rapor_${start}.zip`;
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(content);
+        link.download = zipName;
+        link.click();
+
+    } catch (err) {
+        console.error("Toplu işlem hatası:", err);
+        alert("Bir hata oluştu: " + err.message);
+    } finally {
+        // İşlem bitince overlay'i kapat
+        overlay.style.display = 'none';
+    }
+}
