@@ -401,7 +401,98 @@
         // Brand-view inputlarını güncelle
         document.getElementById('start-date').value = headerStart;
         document.getElementById('end-date').value = headerEnd;
+        generateFinalPDF();
         
         // reporting.js'deki generateFinalPDF'i çağır
-        generateFinalPDF();
+        // BU FONKSİYON DOSYANIN EN DIŞINDA OLMALI
     }
+    async function generateFinalPDF() {
+    const brandName = currentActiveBrand;
+    const start = document.getElementById('header-start-date').value || document.getElementById('start-date').value;
+    const end = document.getElementById('header-end-date').value || document.getElementById('end-date').value;
+
+    if (!brandName || !start || !end) {
+        alert("Lütfen marka ve tarih aralığı seçin!");
+        return;
+    }
+
+    // 1. Seçili Dönem Verilerini Çek
+    const { data, error } = await _supabase.from('marketing_reports')
+        .select('*')
+        .eq('brand_name', brandName)
+        .gte('report_date', start)
+        .lte('report_date', end);
+
+    if (error || !data || data.length === 0) {
+        alert("Bu tarih aralığında veri bulunamadı!");
+        return;
+    }
+
+    // 2. Önceki Dönem Tarihlerini Hesapla
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+
+    const prevEnd = new Date(startDate);
+    prevEnd.setDate(prevEnd.getDate() - 1);
+    const prevStart = new Date(prevEnd);
+    prevStart.setDate(prevStart.getDate() - diffDays + 1);
+
+    const prevStartStr = prevStart.toISOString().split('T')[0];
+    const prevEndStr = prevEnd.toISOString().split('T')[0];
+
+    // 3. Önceki Dönem Verisini Çek
+    const { data: prevData } = await _supabase.from('marketing_reports')
+        .select('*')
+        .eq('brand_name', brandName)
+        .gte('report_date', prevStartStr)
+        .lte('report_date', prevEndStr);
+
+    // 4. Trend Hesaplama Yardımcısı
+    const calcTrend = (key) => {
+        const currentTotal = data.reduce((s, c) => s + (c[key] || 0), 0);
+        const prevTotal = prevData ? prevData.reduce((s, c) => s + (c[key] || 0), 0) : 0;
+        if (prevTotal === 0) return { percent: "0%", isUp: true };
+        const diff = ((currentTotal - prevTotal) / prevTotal) * 100;
+        return { 
+            percent: Math.abs(diff).toFixed(1) + "%", 
+            isUp: diff >= 0 
+        };
+    };
+
+    // 5. Verileri Topla
+    const totals = data.reduce((acc, curr) => {
+        acc.rev  += (curr.revenue || 0);
+        acc.spnd += (curr.spend || 0);
+        acc.ord  += (curr.order_count || 0);
+        acc.clk  += (curr.clicks || 0);
+        acc.rch  += (curr.reach || 0);
+        return acc;
+    }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0 });
+
+    const reportTitle = diffDays <= 10 ? "Haftalık Performans Raporu" : "Aylık Performans Raporu";
+
+    // 6. Rapor Verisini Hazırla
+    const reportData = {
+        name: brandName,
+        title: reportTitle,
+        startDate: new Date(start).toLocaleDateString('tr-TR'),
+        endDate: new Date(end).toLocaleDateString('tr-TR'),
+        revenue: totals.rev.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        spend: totals.spnd.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        roas: totals.spnd > 0 ? (totals.rev / totals.spnd).toFixed(2) : "0.00",
+        orderCount: totals.ord.toLocaleString('tr-TR'),
+        clicks: totals.clk.toLocaleString('tr-TR'),
+        reach: totals.rch.toLocaleString('tr-TR'),
+        aov: (totals.ord > 0 ? totals.rev / totals.ord : 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        dailySpend: (totals.spnd / data.length).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        revenueTrend: calcTrend('revenue'),
+        spendTrend: calcTrend('spend'),
+        roasTrend: calcTrend('revenue'),
+        orderTrend: calcTrend('order_count')
+    };
+
+    const doc = await createBrandReport(reportData);
+    const safeFileName = brandName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    doc.save(`${safeFileName}_rapor.pdf`);
+}
