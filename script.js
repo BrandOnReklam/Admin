@@ -99,6 +99,9 @@
             document.getElementById('ai-toggle-btn').style.display = 'none';
             document.getElementById('ai-chat-container').style.display = 'none';
             document.querySelector('.pdf-filters-group').style.display = 'none';
+            if (document.getElementById('bulk-pdf-btn')) {
+            document.getElementById('bulk-pdf-btn').style.display = 'none';
+        }
             if(!document.getElementById('client-brand-nav')) {
                 const html = `<div id="client-brand-nav"><div class="nav-label">Yetkili Markanız</div><ul class="brand-list"><li class="active"><i class="fa-solid fa-star"></i> ${currentUser.brand_name}</li><li onclick="logout()" style="color:#ef4444; margin-top:20px;"><i class="fa-solid fa-right-from-bracket"></i> ÇIKIŞ YAP</li></ul></div>`;
                 document.querySelector('.sidebar-content').insertAdjacentHTML('beforeend', html);
