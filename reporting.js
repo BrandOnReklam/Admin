@@ -2,107 +2,110 @@ async function createBrandReport(brandData) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // --- RENK PALETİ ---
-    const bgColor = [173, 224, 255]; 
-    const cardColor = [255, 255, 255]; 
-    const textColor = [0, 0, 0]; 
-    const trendRed = [255, 99, 71]; 
-    const trendGreen = [16, 185, 129]; // Artış için yeşil ekledik
+    // --- YENİ RENK PALETİ ---
+    const bgColor = [252, 250, 242];    // Hafif krem arka plan
+    const cardColor = [255, 255, 255];  // Beyaz kartlar
+    const textColor = [20, 20, 20];     // Koyu metin
+    const brandMor = [95, 30, 235];     // Üst grup chip rengi (Mor)
+    const brandTuruncu = [255, 100, 50]; // Alt grup chip rengi (Turuncu)
+    const trendGreen = [20, 140, 90];   // Artış yeşili
+    const trendRed = [230, 50, 50];     // Azalış kırmızısı
 
     // 1. ARKA PLAN BOYAMA
     doc.setFillColor(...bgColor);
     doc.rect(0, 0, 210, 297, 'F');
 
-    // --- ÜST BAŞLIK BÖLÜMÜ ---
-    doc.setFont("Roboto-Bold", "bold");
+    // --- ÜST BAŞLIK BÖLÜMÜ (Merkezlendi) ---
+    doc.setFont("Montserrat-Bold", "bold");
     doc.setTextColor(...textColor);
-    doc.setFontSize(28);
-    doc.text("Haftalık", 15, 25);
-    doc.text("Performans Raporu", 15, 35);
+    
+    // Sağ üstte tarih aralığı
+    doc.setFontSize(11);
+    doc.text(`${brandData.startDate} - ${brandData.endDate}`, 195, 15, { align: "right" });
 
-    doc.setFontSize(16);
-    doc.text(`${brandData.name} X BRAND ON`, 195, 20, { align: "right" });
+    // Ana Başlıklar
+    doc.setFontSize(32);
+    doc.text(`Brand On x ${brandData.name}`, 105, 35, { align: "center" });
+    doc.setFontSize(26);
+    doc.setFont("Montserrat-Regular", "normal");
+    doc.text(brandData.title, 105, 50, { align: "center" });
 
-    // Tarih Kutusu
-    doc.setDrawColor(0);
-    doc.setFillColor(...cardColor);
-    doc.roundedRect(145, 25, 50, 10, 5, 5, 'FD');
-    doc.setFontSize(8);
-    doc.setFont("Roboto-Regular", "normal");
-    doc.text(`${brandData.startDate} - ${brandData.endDate}`, 170, 31.5, { align: "center" });
+    // --- METRİK KARTLARI AYARLARI ---
+    const gridStartX = 15; 
+    const gridStartY = 75;
+    const colWidth = 58;   
+    const rowHeight = 55; 
+    const gapX = 5;        
+    const gapY = 15;       
 
-    // --- METRİK KARTLARI ---
-    const gridStartX = 20; 
-    const gridStartY = 65;
-    const colWidth = 52;   
-    const rowHeight = 45; 
-    const gapX = 8;        
-    const gapY = 12;       
-
-    // DİNAMİK TRENDLERİ BURADA EŞLEŞTİRİYORUZ
+    // Metrik Listesi ve Renk Eşleşmeleri
     const metrics = [
-        { label: "Toplam Ciro", value: brandData.revenue, isCurrency: true, trend: brandData.revenueTrend },
-        { label: "Toplam Harcama", value: brandData.spend, isCurrency: true, trend: brandData.spendTrend },
-        { label: "Sipariş Sayısı", value: brandData.orderCount, isCurrency: false, trend: brandData.orderTrend },
-        { label: "Tıklamalar", value: brandData.clicks, isCurrency: false, trend: null },
-        { label: "ROAS", value: brandData.roas, isCurrency: false, trend: brandData.roasTrend },
-        { label: "Erişim", value: brandData.reach, isCurrency: false, trend: null },
-        { label: "Ortalama Sepet Tutarı", value: brandData.aov, isCurrency: true, trend: null },
-        { label: "Günlük Harcama", value: brandData.dailySpend, isCurrency: true, trend: null }
+        { label: "HARCAMA", value: brandData.spend, isCurrency: false, trend: brandData.spendTrend, color: brandMor },
+        { label: "CİRO", value: brandData.revenue, isCurrency: false, trend: brandData.revenueTrend, color: brandMor },
+        { label: "ROAS", value: brandData.roas, isCurrency: false, trend: brandData.roasTrend, color: brandMor },
+        { label: "TIKLAMALAR", value: brandData.clicks, isCurrency: false, trend: null, color: brandTuruncu },
+        { label: "ERİŞİM", value: brandData.reach, isCurrency: false, trend: null, color: brandTuruncu },
+        { label: "SİPARİŞ SAYISI", value: brandData.orderCount, isCurrency: false, trend: brandData.orderTrend, color: brandTuruncu },
+        { label: "Ortalama Sepet Tutarı", value: brandData.aov, isCurrency: false, trend: null, color: brandTuruncu },
+        { label: "Günlük Harcama", value: brandData.dailySpend, isCurrency: false, trend: null, color: brandTuruncu }
     ];
 
     metrics.forEach((m, i) => {
-        const col = i % 3;
-        const row = Math.floor(i / 3);
-        const x = gridStartX + (col * (colWidth + gapX));
-        const y = gridStartY + (row * (rowHeight + gapY));
+        // Son iki kartı ortalamak için özel mantık
+        let x, y;
+        if (i < 6) {
+            const col = i % 3;
+            const row = Math.floor(i / 3);
+            x = gridStartX + (col * (colWidth + gapX));
+            y = gridStartY + (row * (rowHeight + gapY));
+        } else {
+            const col = i - 6;
+            x = 42 + (col * (colWidth + gapX)); // Alt iki kartı ortaladık
+            y = gridStartY + (2 * (rowHeight + gapY));
+        }
 
+        // 1. Kart Gövdesi
         doc.setFillColor(...cardColor);
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.4);
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
         doc.roundedRect(x, y, colWidth, rowHeight, 8, 8, 'FD');
 
-        doc.setFillColor(...cardColor);
-        doc.roundedRect(x + 4, y - 5, colWidth - 8, 10, 5, 5, 'FD');
-        doc.setFont("Roboto-Bold", "bold");
-        doc.setFontSize(8);
+        // 2. Chip Başlık (Renkli)
+        doc.setFillColor(...m.color);
+        doc.roundedRect(x + 5, y - 6, colWidth - 10, 12, 6, 6, 'F');
+        doc.setFont("Montserrat-Bold", "bold");
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
         doc.text(m.label, x + (colWidth / 2), y + 1.5, { align: "center" });
 
-        doc.setFontSize(16);
-        let displayValue = m.value.toString().split(' ')[0]; 
-        if (m.isCurrency) displayValue += " TL";
-        doc.text(displayValue, x + (colWidth / 2), y + 20, { align: "center" });
+        // 3. Büyük Değer
+        doc.setTextColor(...textColor);
+        doc.setFontSize(22);
+        let val = m.value.toString().split(' ')[0]; // TL ekini ayıklıyoruz
+        doc.text(val, x + (colWidth / 2), y + 25, { align: "center" });
 
-        // --- DİNAMİK TREND VE OK ÇİZİMİ ---
-        // --- DİNAMİK TREND VE OK ÇİZİMİ ( createBrandReport içindeki ilgili yer ) ---
+        // 4. Dinamik Trend ve Oklar
         if (m.trend && m.trend.percent) {
-            doc.setFontSize(9);
-            const trendTextX = x + (colWidth / 2) - 4;
-            const trendY = y + 32;
+            doc.setFontSize(18);
+            const trendColor = m.trend.isUp ? trendGreen : trendRed;
+            doc.setTextColor(...trendColor);
             
-            // Renk: Artışsa Yeşil, Azalışsa Kırmızı
-            const currentColor = m.trend.isUp ? trendGreen : trendRed;
-            doc.setTextColor(...currentColor);
-            doc.text(m.trend.percent, trendTextX, trendY, { align: "center" });
-            
-            doc.setDrawColor(...currentColor);
-            doc.setLineWidth(0.6);
-            const arrowX = trendTextX + 6;
+            // Yüzde metni
+            const trendX = x + (colWidth / 2) - 5;
+            doc.text(m.trend.percent, trendX, y + 42, { align: "center" });
 
+            // Dolu Üçgen Çizimi (Artış/Azalışa göre)
+            doc.setFillColor(...trendColor);
+            const triX = trendX + 14;
+            const triY = y + 41;
+            
             if (m.trend.isUp) {
-                // YUKARI OK
-                const arrowY = trendY - 1; 
-                doc.line(arrowX, arrowY, arrowX, arrowY - 4); 
-                doc.line(arrowX, arrowY - 4, arrowX - 1.5, arrowY - 2.5);
-                doc.line(arrowX, arrowY - 4, arrowX + 1.5, arrowY - 2.5);
+                // Yukarı üçgen
+                doc.triangle(triX, triY - 3, triX - 3, triY + 1.5, triX + 3, triY + 1.5, 'F');
             } else {
-                // AŞAĞI OK ( Koordinatlar tersine döner )
-                const arrowY = trendY - 5; 
-                doc.line(arrowX, arrowY, arrowX, arrowY + 4); 
-                doc.line(arrowX, arrowY + 4, arrowX - 1.5, arrowY + 2.5);
-                doc.line(arrowX, arrowY + 4, arrowX + 1.5, arrowY + 2.5);
+                // Aşağı üçgen
+                doc.triangle(triX, triY + 1.5, triX - 3, triY - 3, triX + 3, triY - 3, 'F');
             }
-            doc.setTextColor(0, 0, 0); 
         }
     });
 
