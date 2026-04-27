@@ -108,7 +108,11 @@
             }
             brandTitle.innerText = currentUser.brand_name;
             fetchBrandData(currentUser.brand_name, true);
-        } else { showHome(); }
+        } else { showHome(); 
+            if (document.getElementById('bulk-pdf-btn')) {
+            document.getElementById('bulk-pdf-btn').style.display = 'flex';
+        }
+        }
     }
 
     function logout() { localStorage.removeItem('brandOn_session'); location.reload(); }
