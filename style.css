@@ -150,41 +150,58 @@
         #menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 1300; background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 10px; cursor: pointer; }
 
         @media (max-width: 992px) {
-            .master-header {
+        .master-header {
+                position: relative !important;
                 height: auto !important;
-                padding: 15px 15px 15px 75px !important;
+                padding: 60px 20px 20px 20px !important; /* Üstteki menü butonu için pay bıraktık */
+                display: flex !important;
                 flex-direction: column !important;
+                align-items: stretch !important;
                 gap: 15px !important;
+                width: 100% !important;
+                left: 0 !important;
+            }
+             .content {
+                margin-left: 0 !important;
+                padding: 20px !important;
+                padding-top: 10px !important; /* Header relative olduğu için payı azalttık */
+            }
+            .master-header > div:last-child {
+                width: 100% !important;
+                margin: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+             .pdf-filters-group {
+                display: flex !important;
+                flex-direction: column !important;
+                width: 100% !important;
+                margin: 0 !important;
+                gap: 8px !important;
             }
             .search-wrapper {
                 width: 100% !important;
-                max-width: 100% !important;
-            }
-            .header-actions {
-                width: 100%;
-                flex-direction: column;
-                margin-left: 0 !important;
-                gap: 12px !important;
-            }
-            .pdf-filters-group {
-                display: flex !important; 
-                flex-direction: column;
-                width: 100%;
                 margin: 0 !important;
-                gap: 8px;
             }
-            #header-brand-select, 
+             .header-actions {
+                display: flex !important;
+                flex-direction: row !important;
+                width: 100% !important;
+                gap: 10px !important;
+            }
+             #header-brand-select, 
             .pdf-filters-group input {
                 width: 100% !important;
+                max-width: 100% !important;
                 margin: 0 !important;
+                box-sizing: border-box !important;
             }
             .header-actions button {
                 width: 100% !important;
                 justify-content: center;
                 padding: 12px !important;
             }
-            .master-header { left: 0; padding: 0 15px 0 75px; justify-content: space-between; }
-            .search-wrapper { width: 100%; max-width: 100%; margin: 0; height: 42px; }
             #menu-toggle { display: block; position: fixed; top: 16px; left: 16px; z-index: 1300; }
             .sidebar { transform: translateX(-100%); top: 0; height: 100vh; }
             .sidebar.show { transform: translateX(0); }
@@ -208,11 +225,31 @@
             #ai-chat-container { width: calc(100% - 40px); height: 70vh; bottom: 80px; }
             
             /* Test PDF Butonu Mobil */
-            #test-pdf-btn { padding: 10px 12px; font-size: 13px; }
-            
+              #test-pdf-btn, #bulk-pdf-btn {
+                flex: 1 !important; /* Butonların eşit genişlikte olması için */
+                justify-content: center !important;
+                padding: 12px 8px !important;
+                font-size: 12px !important; /* Mobilde taşma yapmaması için font küçültüldü */
+            }
             /* PDF Filtreleri Mobil */
-            .pdf-filters-group { flex-direction: column; gap: 8px; margin: 0 10px; }
-            #header-brand-select, #header-start-date, #header-end-date { width: 100% !important; }
+            #header-brand-select { width: 100% !important; }
+            #header-start-date, #header-end-date {
+            background-color: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            padding: 12px 15px !important;
+            border-radius: 12px !important;
+            font-family: 'Public Sans', sans-serif !important;
+            font-size: 14px !important;
+            color: #1e293b !important;
+            outline: none !important;
+            cursor: pointer !important;
+            height: 45px !important; /* Standart yükseklik */
+            appearance: none !important;
+            -webkit-appearance: none !important;
+        }
+            .flatpickr-input[readonly] {
+           background-color: #fff !important;
+        }
         }
 
         /* YENİ EKLENEN GRUP STİLLERİ (Medya sorgusu dışında kalsın) */
