@@ -460,6 +460,16 @@
         };
     };
 
+    // Özel Trend Hesaplama (AOV ve Günlük Harcama için)
+    const calcCalculatedTrend = (currentVal, prevVal) => {
+        if (!prevVal || prevVal === 0) return { percent: "0%", isUp: true };
+        const diff = ((currentVal - prevVal) / prevVal) * 100;
+        return { 
+            percent: Math.abs(diff).toFixed(1) + "%", 
+            isUp: diff >= 0 
+        };
+    };
+
     // 5. Verileri Topla
     const totals = data.reduce((acc, curr) => {
         acc.rev  += (curr.revenue || 0);
@@ -470,7 +480,21 @@
         return acc;
     }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0 });
 
+    // Önceki dönem toplamları (AOV ve DailySpend trendi için lazım)
+    const prevTotals = prevData ? prevData.reduce((acc, curr) => {
+        acc.rev += (curr.revenue || 0);
+        acc.spnd += (curr.spend || 0);
+        acc.ord += (curr.order_count || 0);
+        return acc;
+    }, { rev: 0, spnd: 0, ord: 0 }) : { rev: 0, spnd: 0, ord: 0 };
+
     const reportTitle = diffDays <= 10 ? "Haftalık Performans Raporu" : "Aylık Performans Raporu";
+
+    // Değer hesaplamaları
+    const currentAOV = totals.ord > 0 ? totals.rev / totals.ord : 0;
+    const prevAOV = prevTotals.ord > 0 ? prevTotals.rev / prevTotals.ord : 0;
+    const currentDailySpend = totals.spnd / data.length;
+    const prevDailySpend = prevData && prevData.length > 0 ? prevTotals.spnd / prevData.length : 0;
 
     // 6. Rapor Verisini Hazırla
     const reportData = {
@@ -484,12 +508,18 @@
         orderCount: totals.ord.toLocaleString('tr-TR'),
         clicks: totals.clk.toLocaleString('tr-TR'),
         reach: totals.rch.toLocaleString('tr-TR'),
-        aov: (totals.ord > 0 ? totals.rev / totals.ord : 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
-        dailySpend: (totals.spnd / data.length).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        aov: currentAOV.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        dailySpend: currentDailySpend.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+        
+        // TÜM TRENDLER BURADA
         revenueTrend: calcTrend('revenue'),
         spendTrend: calcTrend('spend'),
-        roasTrend: calcTrend('revenue'),
-        orderTrend: calcTrend('order_count')
+        roasTrend: calcCalculatedTrend(totals.spnd > 0 ? totals.rev / totals.spnd : 0, prevTotals.spnd > 0 ? prevTotals.rev / prevTotals.spnd : 0),
+        orderTrend: calcTrend('order_count'),
+        clicksTrend: calcTrend('clicks'),
+        reachTrend: calcTrend('reach'),
+        aovTrend: calcCalculatedTrend(currentAOV, prevAOV),
+        dailySpendTrend: calcCalculatedTrend(currentDailySpend, prevDailySpend)
     };
 
     const doc = await createBrandReport(reportData);

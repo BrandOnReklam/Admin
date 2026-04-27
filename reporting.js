@@ -2,7 +2,7 @@ async function createBrandReport(brandData) {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // --- YENİ RENK PALETİ ---
+    // --- RENK PALETİ ---
     const bgColor = [252, 250, 242];    // Hafif krem arka plan
     const cardColor = [255, 255, 255];  // Beyaz kartlar
     const textColor = [20, 20, 20];     // Koyu metin
@@ -38,20 +38,19 @@ async function createBrandReport(brandData) {
     const gapX = 5;        
     const gapY = 15;       
 
-    // Metrik Listesi ve Renk Eşleşmeleri
+    // Metrik Listesi ve Dinamik Trend Eşleşmeleri
     const metrics = [
-        { label: "HARCAMA", value: brandData.spend, isCurrency: false, trend: brandData.spendTrend, color: brandMor },
-        { label: "CİRO", value: brandData.revenue, isCurrency: false, trend: brandData.revenueTrend, color: brandMor },
-        { label: "ROAS", value: brandData.roas, isCurrency: false, trend: brandData.roasTrend, color: brandMor },
-        { label: "TIKLAMALAR", value: brandData.clicks, isCurrency: false, trend: null, color: brandTuruncu },
-        { label: "ERİŞİM", value: brandData.reach, isCurrency: false, trend: null, color: brandTuruncu },
-        { label: "SİPARİŞ SAYISI", value: brandData.orderCount, isCurrency: false, trend: brandData.orderTrend, color: brandTuruncu },
-        { label: "Ortalama Sepet Tutarı", value: brandData.aov, isCurrency: false, trend: null, color: brandTuruncu },
-        { label: "Günlük Harcama", value: brandData.dailySpend, isCurrency: false, trend: null, color: brandTuruncu }
+        { label: "HARCAMA", value: brandData.spend, trend: brandData.spendTrend, color: brandMor },
+        { label: "CİRO", value: brandData.revenue, trend: brandData.revenueTrend, color: brandMor },
+        { label: "ROAS", value: brandData.roas, trend: brandData.roasTrend, color: brandMor },
+        { label: "TIKLAMALAR", value: brandData.clicks, trend: brandData.clicksTrend, color: brandTuruncu },
+        { label: "ERİŞİM", value: brandData.reach, trend: brandData.reachTrend, color: brandTuruncu },
+        { label: "SİPARİŞ SAYISI", value: brandData.orderCount, trend: brandData.orderTrend, color: brandTuruncu },
+        { label: "ORTALAMA SEPET TUTARI", value: brandData.aov, trend: brandData.aovTrend, color: brandTuruncu },
+        { label: "GÜNLÜK HARCAMA", value: brandData.dailySpend, trend: brandData.dailySpendTrend, color: brandTuruncu }
     ];
 
     metrics.forEach((m, i) => {
-        // Son iki kartı ortalamak için özel mantık
         let x, y;
         if (i < 6) {
             const col = i % 3;
@@ -60,7 +59,7 @@ async function createBrandReport(brandData) {
             y = gridStartY + (row * (rowHeight + gapY));
         } else {
             const col = i - 6;
-            x = 42 + (col * (colWidth + gapX)); // Alt iki kartı ortaladık
+            x = 42 + (col * (colWidth + gapX)); 
             y = gridStartY + (2 * (rowHeight + gapY));
         }
 
@@ -70,40 +69,36 @@ async function createBrandReport(brandData) {
         doc.setLineWidth(0.3);
         doc.roundedRect(x, y, colWidth, rowHeight, 8, 8, 'FD');
 
-        // 2. Chip Başlık (Renkli)
+        // 2. Chip Başlık (Beyaz Yazı, Renkli Kutu)
         doc.setFillColor(...m.color);
         doc.roundedRect(x + 5, y - 6, colWidth - 10, 12, 6, 6, 'F');
         doc.setFont("Montserrat-Bold", "bold");
         doc.setTextColor(255, 255, 255);
-        doc.setFontSize(10);
+        doc.setFontSize(9); // 10 yerine 9 yaptım ki uzun başlıklar taşmasın
         doc.text(m.label, x + (colWidth / 2), y + 1.5, { align: "center" });
 
         // 3. Büyük Değer
         doc.setTextColor(...textColor);
         doc.setFontSize(22);
-        let val = m.value.toString().split(' ')[0]; // TL ekini ayıklıyoruz
+        let val = m.value.toString().split(' ')[0]; 
         doc.text(val, x + (colWidth / 2), y + 25, { align: "center" });
 
-        // 4. Dinamik Trend ve Oklar
-        if (m.trend && m.trend.percent) {
+        // 4. Dinamik Trend ve Oklar (Artık tüm metrikler için çalışır)
+        if (m.trend && m.trend.percent && m.trend.percent !== "0%") {
             doc.setFontSize(18);
             const trendColor = m.trend.isUp ? trendGreen : trendRed;
             doc.setTextColor(...trendColor);
             
-            // Yüzde metni
             const trendX = x + (colWidth / 2) - 5;
             doc.text(m.trend.percent, trendX, y + 42, { align: "center" });
 
-            // Dolu Üçgen Çizimi (Artış/Azalışa göre)
             doc.setFillColor(...trendColor);
-            const triX = trendX + 14;
+            const triX = trendX + 14; 
             const triY = y + 41;
             
             if (m.trend.isUp) {
-                // Yukarı üçgen
                 doc.triangle(triX, triY - 3, triX - 3, triY + 1.5, triX + 3, triY + 1.5, 'F');
             } else {
-                // Aşağı üçgen
                 doc.triangle(triX, triY + 1.5, triX - 3, triY - 3, triX + 3, triY - 3, 'F');
             }
         }
@@ -225,11 +220,11 @@ async function downloadAllReportsAsZip() {
 
             if (!currentData || currentData.length === 0) continue;
 
-            // 2. ÖNCEKİ DÖNEM VERİSİNİ ÇEK (EKSİK OLAN KISIM BURAYDI)
+            // 2. ÖNCEKİ DÖNEM VERİSİNİ ÇEK
             const { data: prevData } = await _supabase.from('marketing_reports').select('*')
                 .eq('brand_name', brandName).gte('report_date', prevStartStr).lte('report_date', prevEndStr);
 
-            // 3. TREND HESAPLAMA YARDIMCISI (ZIP DÖNGÜSÜ İÇİN)
+            // 3. YARDIMCI TREND FONKSİYONLARI
             const calcTrend = (key) => {
                 const currentTotal = currentData.reduce((s, c) => s + (c[key] || 0), 0);
                 const prevTotal = prevData ? prevData.reduce((s, c) => s + (c[key] || 0), 0) : 0;
@@ -238,12 +233,31 @@ async function downloadAllReportsAsZip() {
                 return { percent: Math.abs(diff).toFixed(1) + "%", isUp: diff >= 0 };
             };
 
+            const calcCalculatedTrend = (currentVal, prevVal) => {
+                if (!prevVal || prevVal === 0) return { percent: "0%", isUp: true };
+                const diff = ((currentVal - prevVal) / prevVal) * 100;
+                return { percent: Math.abs(diff).toFixed(1) + "%", isUp: diff >= 0 };
+            };
+
+            // 4. TOPLAMLARI HESAPLA
             const totals = currentData.reduce((acc, curr) => {
-                acc.rev += (curr.revenue || 0); acc.spnd += (curr.spend || 0);
-                acc.ord += (curr.order_count || 0); acc.clk += (curr.clicks || 0);
-                acc.rch += (curr.reach || 0);
+                acc.rev  += (curr.revenue || 0); acc.spnd += (curr.spend || 0);
+                acc.ord  += (curr.order_count || 0); acc.clk  += (curr.clicks || 0);
+                acc.rch  += (curr.reach || 0);
                 return acc;
             }, { rev: 0, spnd: 0, ord: 0, clk: 0, rch: 0 });
+
+            const prevTotals = prevData ? prevData.reduce((acc, curr) => {
+                acc.rev += (curr.revenue || 0); acc.spnd += (curr.spend || 0);
+                acc.ord += (curr.order_count || 0);
+                return acc;
+            }, { rev: 0, spnd: 0, ord: 0 }) : { rev: 0, spnd: 0, ord: 0 };
+
+            // Hesaplanan değerler
+            const currentAOV = totals.ord > 0 ? totals.rev / totals.ord : 0;
+            const prevAOV = prevTotals.ord > 0 ? prevTotals.rev / prevTotals.ord : 0;
+            const currentDailySpend = totals.spnd / currentData.length;
+            const prevDailySpend = prevData && prevData.length > 0 ? prevTotals.spnd / prevData.length : 0;
 
             const reportData = {
                 name: brandName,
@@ -256,13 +270,18 @@ async function downloadAllReportsAsZip() {
                 orderCount: totals.ord.toLocaleString('tr-TR'),
                 clicks: totals.clk.toLocaleString('tr-TR'),
                 reach: totals.rch.toLocaleString('tr-TR'),
-                aov: (totals.ord > 0 ? totals.rev / totals.ord : 0).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
-                dailySpend: (totals.spnd / currentData.length).toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
-                // TRENDLER ARTIK ZIP'TE DE VAR!
+                aov: currentAOV.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+                dailySpend: currentDailySpend.toLocaleString('tr-TR', { minimumFractionDigits: 2 }),
+                
+                // --- TÜM TRENDLER ZIP İÇİN AKTİF ---
                 revenueTrend: calcTrend('revenue'),
                 spendTrend: calcTrend('spend'),
-                roasTrend: calcTrend('revenue'),
-                orderTrend: calcTrend('order_count')
+                roasTrend: calcCalculatedTrend(totals.spnd > 0 ? totals.rev / totals.spnd : 0, prevTotals.spnd > 0 ? prevTotals.rev / prevTotals.spnd : 0),
+                orderTrend: calcTrend('order_count'),
+                clicksTrend: calcTrend('clicks'),
+                reachTrend: calcTrend('reach'),
+                aovTrend: calcCalculatedTrend(currentAOV, prevAOV),
+                dailySpendTrend: calcCalculatedTrend(currentDailySpend, prevDailySpend)
             };
 
             const doc = await createBrandReport(reportData);
