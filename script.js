@@ -45,7 +45,8 @@
             altInput: true,
             altFormat: "d/m/Y",
             dateFormat: "Y-m-d",
-            locale: "tr"
+            locale: "tr" ,
+            disableMobile: "true"
         };
         startPicker = flatpickr("#start-date", fpConfig);
         endPicker = flatpickr("#end-date", fpConfig);
